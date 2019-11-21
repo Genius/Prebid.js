@@ -1,5 +1,6 @@
 [
   "appnexusBidAdapter",
+  "appnexusAstBidAdapter",
   "indexExchangeBidAdapter",
   "prebidServerBidAdapter",
   "tripleliftBidAdapter",
