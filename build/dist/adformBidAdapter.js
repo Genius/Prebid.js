@@ -1,14 +1,14 @@
-pbjsChunk([105],{
+pbjsChunk([122],{
 
-/***/ 58:
+/***/ 79:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(59);
+module.exports = __webpack_require__(80);
 
 
 /***/ }),
 
-/***/ 59:
+/***/ 80:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19,10 +19,10 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 var utils = __webpack_require__(0);
 var adloader = __webpack_require__(5);
 var bidmanager = __webpack_require__(2);
-var bidfactory = __webpack_require__(3);
-var STATUSCODES = __webpack_require__(4).STATUS;
+var bidfactory = __webpack_require__(4);
+var STATUSCODES = __webpack_require__(3).STATUS;
 var adaptermanager = __webpack_require__(1);
-var Adapter = __webpack_require__(7)['default'];
+var Adapter = __webpack_require__(9)['default'];
 
 var ADFORM_BIDDER_CODE = 'adform';
 
@@ -55,6 +55,7 @@ function AdformAdapter() {
 
     request.unshift('//' + globalParams[0][1] + '/adx/?rp=4');
 
+    request.push('auctionId=' + params.requestId);
     for (i = 1, l = globalParams.length; i < l; i++) {
       _key = globalParams[i][0];
       _value = globalParams[i][1];
@@ -194,4 +195,4 @@ module.exports = AdformAdapter;
 
 /***/ })
 
-},[58]);
+},[79]);

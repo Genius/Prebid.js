@@ -1,14 +1,14 @@
-pbjsChunk([93],{
+pbjsChunk([111],{
 
-/***/ 106:
+/***/ 161:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(107);
+module.exports = __webpack_require__(162);
 
 
 /***/ }),
 
-/***/ 107:
+/***/ 162:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18,10 +18,10 @@ module.exports = __webpack_require__(107);
  * Carambola adapter
  */
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var utils = __webpack_require__(0);
-var ajax = __webpack_require__(6).ajax;
+var ajax = __webpack_require__(7).ajax;
 var adaptermanager = __webpack_require__(1);
 
 function CarambolaAdapter() {
@@ -203,4 +203,4 @@ module.exports = CarambolaAdapter;
 
 /***/ })
 
-},[106]);
+},[161]);

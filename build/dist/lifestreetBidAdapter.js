@@ -1,20 +1,20 @@
-pbjsChunk([71],{
+pbjsChunk([92],{
 
-/***/ 171:
+/***/ 241:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(172);
+module.exports = __webpack_require__(242);
 
 
 /***/ }),
 
-/***/ 172:
+/***/ 242:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var utils = __webpack_require__(0);
 var adloader = __webpack_require__(5);
@@ -153,4 +153,4 @@ module.exports = LifestreetAdapter;
 
 /***/ })
 
-},[171]);
+},[241]);

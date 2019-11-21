@@ -1,22 +1,22 @@
-pbjsChunk([56],{
+pbjsChunk([81],{
 
-/***/ 224:
+/***/ 307:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(225);
+module.exports = __webpack_require__(308);
 
 
 /***/ }),
 
-/***/ 225:
+/***/ 308:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 var utils = __webpack_require__(0);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
 var adaptermanager = __webpack_require__(1);
@@ -133,4 +133,4 @@ module.exports = RoxotAdapter;
 
 /***/ })
 
-},[224]);
+},[307]);

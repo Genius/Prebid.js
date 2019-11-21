@@ -1,22 +1,22 @@
-pbjsChunk([95],{
+pbjsChunk([113],{
 
-/***/ 102:
+/***/ 157:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(103);
+module.exports = __webpack_require__(158);
 
 
 /***/ }),
 
-/***/ 103:
+/***/ 158:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 var utils = __webpack_require__(0);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
 var adaptermanager = __webpack_require__(1);
@@ -218,4 +218,4 @@ module.exports = BrightcomAdapter;
 
 /***/ })
 
-},[102]);
+},[157]);

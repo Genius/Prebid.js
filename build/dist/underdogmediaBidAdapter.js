@@ -1,133 +1,157 @@
-pbjsChunk([36],{
+pbjsChunk([5],{
 
-/***/ 269:
+/***/ 371:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(270);
+__webpack_require__(372);
+module.exports = __webpack_require__(373);
 
 
 /***/ }),
 
-/***/ 270:
+/***/ 372:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.spec = undefined;
+
+var _utils = __webpack_require__(0);
+
+var utils = _interopRequireWildcard(_utils);
+
 var _config = __webpack_require__(8);
 
-var bidfactory = __webpack_require__(3);
-var bidmanager = __webpack_require__(2);
-var adloader = __webpack_require__(5);
-var utils = __webpack_require__(0);
-var adaptermanager = __webpack_require__(1);
+var _bidderFactory = __webpack_require__(6);
 
-function UnderdogMediaAdapter() {
-  var UDM_ADAPTER_VERSION = '1.0.0';
-  var getJsStaticUrl = window.location.protocol + '//udmserve.net/udm/img.fetch?tid=1;dt=9;callback=pbjs.handleUnderdogMediaCB;';
-  var bidParams = {};
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-  function _callBids(params) {
-    bidParams = params;
+var BIDDER_CODE = 'underdogmedia';
+var UDM_ADAPTER_VERSION = '1.0';
+
+var spec = exports.spec = {
+  code: BIDDER_CODE,
+  bidParams: [],
+
+  isBidRequestValid: function isBidRequestValid(bid) {
+    return !!(bid.params && bid.params.siteId && bid.sizes && bid.sizes.length > 0);
+  },
+
+  buildRequests: function buildRequests(validBidRequests) {
     var sizes = [];
     var siteId = 0;
 
-    bidParams.bids.forEach((function (bidParam) {
+    validBidRequests.forEach((function (bidParam) {
       sizes = utils.flatten(sizes, utils.parseSizesInput(bidParam.sizes));
       siteId = bidParam.params.siteId;
     }));
-    adloader.loadScript(getJsStaticUrl + 'sid=' + siteId + ';sizes=' + sizes.join(','), null, false);
-  }
 
-  function _callback(response) {
-    var mids = response.mids;
-    bidParams.bids.forEach((function (bidParam) {
-      var filled = false;
-      mids.forEach((function (mid) {
+    return {
+      method: 'GET',
+      url: window.location.protocol + '//udmserve.net/udm/img.fetch',
+      data: 'tid=1;dt=10;sid=' + siteId + ';sizes=' + sizes.join(','),
+      bidParams: validBidRequests
+    };
+  },
+
+  interpretResponse: function interpretResponse(serverResponse, bidRequest) {
+    var bidResponses = [];
+    bidRequest.bidParams.forEach((function (bidParam) {
+      serverResponse.body.mids.forEach((function (mid) {
         if (mid.useCount > 0) {
           return;
         }
+
         if (!mid.useCount) {
           mid.useCount = 0;
         }
+
         var size_not_found = true;
         utils.parseSizesInput(bidParam.sizes).forEach((function (size) {
           if (size === mid.width + 'x' + mid.height) {
             size_not_found = false;
           }
         }));
+
         if (size_not_found) {
           return;
         }
 
-        var bid = bidfactory.createBid(1, bidParam);
-        bid.bidderCode = bidParam.bidder;
-        bid.width = mid.width;
-        bid.height = mid.height;
+        var bidResponse = {
+          requestId: bidParam.bidId,
+          bidderCode: spec.code,
+          cpm: parseFloat(mid.cpm),
+          width: mid.width,
+          height: mid.height,
+          ad: mid.ad_code_html,
+          creativeId: mid.mid,
+          currency: 'USD',
+          netRevenue: false,
+          ttl: _config.config.getConfig('_bidderTimeout')
+        };
 
-        bid.cpm = parseFloat(mid.cpm);
-        if (bid.cpm <= 0) {
+        if (bidResponse.cpm <= 0) {
           return;
         }
+        if (bidResponse.ad.length <= 0) {
+          return;
+        }
+
         mid.useCount++;
-        bid.ad = mid.ad_code_html;
-        bid.ad = _makeNotification(bid, mid, bidParam) + bid.ad;
-        if (!(bid.ad || bid.adUrl)) {
-          return;
-        }
-        bidmanager.addBidResponse(bidParam.placementCode, bid);
-        filled = true;
+
+        bidResponse.ad += makeNotification(bidResponse, mid, bidParam);
+
+        bidResponses.push(bidResponse);
       }));
-      if (!filled) {
-        var nobid = bidfactory.createBid(2, bidParam);
-        nobid.bidderCode = bidParam.bidder;
-        bidmanager.addBidResponse(bidParam.placementCode, nobid);
-      }
     }));
+
+    return bidResponses;
   }
+};
 
-  pbjs.handleUnderdogMediaCB = _callback;
+function makeNotification(bid, mid, bidParam) {
+  var url = mid.notification_url;
 
-  function _makeNotification(bid, mid, bidParam) {
-    var url = mid.notification_url;
+  url += UDM_ADAPTER_VERSION;
+  url += ';cb=' + Math.random();
+  url += ';qqq=' + 1 / bid.cpm;
+  url += ';hbt=' + _config.config.getConfig('_bidderTimeout');
+  url += ';style=adapter';
+  url += ';vis=' + encodeURIComponent(document.visibilityState);
 
-    url += UDM_ADAPTER_VERSION;
-    url += ';cb=' + Math.random();
-    url += ';qqq=' + 1 / bid.cpm;
-    url += ';hbt=' + _config.config.getConfig('bidderTimeout');
-    url += ';style=adapter';
-    url += ';vis=' + encodeURIComponent(document.visibilityState);
-
-    url += ';traffic_info=' + encodeURIComponent(JSON.stringify(_getUrlVars()));
-    if (bidParam.params.subId) {
-      url += ';subid=' + encodeURIComponent(bidParam.params.subId);
-    }
-    return '<script async src="' + url + '"></script>';
+  url += ';traffic_info=' + encodeURIComponent(JSON.stringify(getUrlVars()));
+  if (bidParam.params.subId) {
+    url += ';subid=' + encodeURIComponent(bidParam.params.subId);
   }
-
-  function _getUrlVars() {
-    var vars = {};
-    var hash;
-    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-    for (var i = 0; i < hashes.length; i++) {
-      hash = hashes[i].split('=');
-      if (!hash[0].match(/^utm/)) {
-        continue;
-      }
-      vars[hash[0]] = hash[1].substr(0, 150);
-    }
-    return vars;
-  }
-
-  return {
-    callBids: _callBids
-  };
+  return '<script async src="' + url + '"></script>';
 }
 
-adaptermanager.registerBidAdapter(new UnderdogMediaAdapter(), 'underdogmedia');
+function getUrlVars() {
+  var vars = {};
+  var hash;
+  var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+  for (var i = 0; i < hashes.length; i++) {
+    hash = hashes[i].split('=');
+    if (hash[0].match(/^utm_/)) {
+      vars[hash[0]] = hash[1].substr(0, 150);
+    }
+  }
+  return vars;
+}
 
-module.exports = UnderdogMediaAdapter;
+(0, _bidderFactory.registerBidder)(spec);
+
+/***/ }),
+
+/***/ 373:
+/***/ (function(module, exports) {
+
+
 
 /***/ })
 
-},[269]);
+},[371]);

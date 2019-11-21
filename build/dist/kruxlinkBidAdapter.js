@@ -1,20 +1,20 @@
-pbjsChunk([73],{
+pbjsChunk([93],{
 
-/***/ 167:
+/***/ 236:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(168);
+module.exports = __webpack_require__(237);
 
 
 /***/ }),
 
-/***/ 168:
+/***/ 237:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
 var adaptermanager = __webpack_require__(1);
@@ -101,4 +101,4 @@ module.exports = KruxAdapter;
 
 /***/ })
 
-},[167]);
+},[236]);

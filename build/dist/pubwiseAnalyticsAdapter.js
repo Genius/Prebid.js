@@ -1,4 +1,4 @@
-pbjsChunk([6],{
+pbjsChunk([21],{
 
 /***/ 10:
 /***/ (function(module, exports, __webpack_require__) {
@@ -14,13 +14,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 exports['default'] = AnalyticsAdapter;
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 var _constants2 = _interopRequireDefault(_constants);
 
 var _adloader = __webpack_require__(5);
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -208,15 +208,15 @@ function AnalyticsAdapter(_ref) {
 
 /***/ }),
 
-/***/ 206:
+/***/ 285:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(207);
+module.exports = __webpack_require__(286);
 
 
 /***/ }),
 
-/***/ 207:
+/***/ 286:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -228,7 +228,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
 var _AnalyticsAdapter = __webpack_require__(10);
 
@@ -238,7 +238,7 @@ var _adaptermanager = __webpack_require__(1);
 
 var _adaptermanager2 = _interopRequireDefault(_adaptermanager);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 var _constants2 = _interopRequireDefault(_constants);
 
@@ -373,4 +373,4 @@ exports['default'] = pubwiseAnalytics;
 
 /***/ })
 
-},[206]);
+},[285]);

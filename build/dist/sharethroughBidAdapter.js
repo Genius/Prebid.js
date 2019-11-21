@@ -1,132 +1,95 @@
-pbjsChunk([51],{
+pbjsChunk([10],{
 
-/***/ 236:
+/***/ 324:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(237);
+__webpack_require__(325);
+module.exports = __webpack_require__(326);
 
 
 /***/ }),
 
-/***/ 237:
+/***/ 325:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__(0);
-var bidmanager = __webpack_require__(2);
-var bidfactory = __webpack_require__(3);
-var ajax = __webpack_require__(6).ajax;
-var adaptermanager = __webpack_require__(1);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.sharethroughAdapterSpec = undefined;
 
-var STR_BIDDER_CODE = 'sharethrough';
-var STR_VERSION = '1.2.0';
+var _bidderFactory = __webpack_require__(6);
 
-var SharethroughAdapter = function SharethroughAdapter() {
-  var str = {};
-  str.STR_BTLR_HOST = document.location.protocol + '//btlr.sharethrough.com';
-  str.STR_BEACON_HOST = document.location.protocol + '//b.sharethrough.com/butler?';
-  str.placementCodeSet = {};
-  str.ajax = ajax;
+var BIDDER_CODE = 'sharethrough';
+var VERSION = '2.0.0';
+var STR_ENDPOINT = document.location.protocol + '//btlr.sharethrough.com/header-bid/v1';
 
-  function _callBids(params) {
-    var bids = params.bids;
+var sharethroughAdapterSpec = exports.sharethroughAdapterSpec = {
+  code: BIDDER_CODE,
+  isBidRequestValid: function isBidRequestValid(bid) {
+    return !!bid.params.pkey && bid.bidder === BIDDER_CODE;
+  },
+  buildRequests: function buildRequests(bidRequests) {
+    return bidRequests.map((function (bid) {
+      return {
+        method: 'GET',
+        url: STR_ENDPOINT,
+        data: {
+          bidId: bid.bidId,
+          placement_key: bid.params.pkey,
+          hbVersion: '0.34.9',
+          strVersion: VERSION,
+          hbSource: 'prebid'
+        }
+      };
+    }));
+  },
+  interpretResponse: function interpretResponse(_ref, req) {
+    var body = _ref.body;
 
-    // cycle through bids
-    for (var i = 0; i < bids.length; i += 1) {
-      var bidRequest = bids[i];
-      str.placementCodeSet[bidRequest.placementCode] = bidRequest;
-      var scriptUrl = _buildSharethroughCall(bidRequest);
-      str.ajax(scriptUrl, _createCallback(bidRequest), undefined, { withCredentials: true });
-    }
+    if (!Object.keys(body).length) return [];
+
+    var creative = body.creatives[0];
+
+    return [{
+      requestId: req.data.bidId,
+      width: 0,
+      height: 0,
+      cpm: creative.cpm,
+      creativeId: creative.creative.creative_key,
+      deal_id: creative.creative.deal_id,
+      currency: 'USD',
+      netRevenue: true,
+      ttl: 360,
+      ad: generateAd(body, req)
+    }];
   }
-
-  function _createCallback(bidRequest) {
-    return function (bidResponse) {
-      _strcallback(bidRequest, bidResponse);
-    };
-  }
-
-  function _buildSharethroughCall(bid) {
-    var pkey = utils.getBidIdParameter('pkey', bid.params);
-
-    var host = str.STR_BTLR_HOST;
-
-    var url = host + '/header-bid/v1?';
-    url = utils.tryAppendQueryString(url, 'bidId', bid.bidId);
-    url = utils.tryAppendQueryString(url, 'placement_key', pkey);
-    url = appendEnvFields(url);
-
-    return url;
-  }
-
-  function _strcallback(bidObj, bidResponse) {
-    try {
-      bidResponse = JSON.parse(bidResponse);
-    } catch (e) {
-      _handleInvalidBid(bidObj);
-      return;
-    }
-
-    if (bidResponse.creatives && bidResponse.creatives.length > 0) {
-      _handleBid(bidObj, bidResponse);
-    } else {
-      _handleInvalidBid(bidObj);
-    }
-  }
-
-  function _handleBid(bidObj, bidResponse) {
-    try {
-      var bidId = bidResponse.bidId;
-      var bid = bidfactory.createBid(1, bidObj);
-      bid.bidderCode = STR_BIDDER_CODE;
-      bid.cpm = bidResponse.creatives[0].cpm;
-      var size = bidObj.sizes[0];
-      bid.width = size[0];
-      bid.height = size[1];
-      bid.adserverRequestId = bidResponse.adserverRequestId;
-      str.placementCodeSet[bidObj.placementCode].adserverRequestId = bidResponse.adserverRequestId;
-
-      bid.pkey = utils.getBidIdParameter('pkey', bidObj.params);
-
-      var windowLocation = 'str_response_' + bidId;
-      var bidJsonString = JSON.stringify(bidResponse);
-      bid.ad = '<div data-str-native-key="' + bid.pkey + '" data-stx-response-name=\'' + windowLocation + '\'>\n                </div>\n                <script>var ' + windowLocation + ' = ' + bidJsonString + '</script>\n                <script src="//native.sharethrough.com/assets/sfp-set-targeting.js"></script>';
-      if (!(window.STR && window.STR.Tag) && !(window.top.STR && window.top.STR.Tag)) {
-        var sfpScriptTag = '\n          <script>\n          (function() {\n            const sfp_js = document.createElement(\'script\');\n            sfp_js.src = "//native.sharethrough.com/assets/sfp.js";\n            sfp_js.type = \'text/javascript\';\n            sfp_js.charset = \'utf-8\';\n            try {\n                window.top.document.getElementsByTagName(\'body\')[0].appendChild(sfp_js);\n            } catch (e) {\n              console.log(e);\n            }\n          })()\n          </script>';
-        bid.ad += sfpScriptTag;
-      }
-      bidmanager.addBidResponse(bidObj.placementCode, bid);
-    } catch (e) {
-      _handleInvalidBid(bidObj);
-    }
-  }
-
-  function _handleInvalidBid(bidObj) {
-    var bid = bidfactory.createBid(2, bidObj);
-    bid.bidderCode = STR_BIDDER_CODE;
-    bidmanager.addBidResponse(bidObj.placementCode, bid);
-  }
-
-  function appendEnvFields(url) {
-    url = utils.tryAppendQueryString(url, 'hbVersion', '0.32.0');
-    url = utils.tryAppendQueryString(url, 'strVersion', STR_VERSION);
-    url = utils.tryAppendQueryString(url, 'hbSource', 'prebid');
-
-    return url;
-  }
-
-  return {
-    callBids: _callBids,
-    str: str
-  };
 };
 
-adaptermanager.registerBidAdapter(new SharethroughAdapter(), 'sharethrough');
+function generateAd(body, req) {
+  var strRespId = 'str_response_' + req.data.bidId;
 
-module.exports = SharethroughAdapter;
+  return '\n    <div data-str-native-key="' + req.data.placement_key + '" data-stx-response-name="' + strRespId + '">\n    </div>\n    <script>var ' + strRespId + ' = "' + b64EncodeUnicode(JSON.stringify(body)) + '"</script>\n    <script src="//native.sharethrough.com/assets/sfp-set-targeting.js"></script>\n    <script>\n    (function() {\n      if (!(window.STR && window.STR.Tag) && !(window.top.STR && window.top.STR.Tag)) {\n        const sfp_js = document.createElement(\'script\');\n        sfp_js.src = "//native.sharethrough.com/assets/sfp.js";\n        sfp_js.type = \'text/javascript\';\n        sfp_js.charset = \'utf-8\';\n        try {\n            window.top.document.getElementsByTagName(\'body\')[0].appendChild(sfp_js);\n        } catch (e) {\n          console.log(e);\n        }\n      }\n    })()\n    </script>';
+}
+
+// See https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
+function b64EncodeUnicode(str) {
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (function toSolidBytes(match, p1) {
+    return String.fromCharCode('0x' + p1);
+  })));
+}
+
+(0, _bidderFactory.registerBidder)(sharethroughAdapterSpec);
+
+/***/ }),
+
+/***/ 326:
+/***/ (function(module, exports) {
+
+
 
 /***/ })
 
-},[236]);
+},[324]);

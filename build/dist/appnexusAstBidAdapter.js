@@ -1,15 +1,15 @@
-pbjsChunk([20],{
+pbjsChunk([49],{
 
-/***/ 87:
+/***/ 136:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(88);
-module.exports = __webpack_require__(89);
+__webpack_require__(137);
+module.exports = __webpack_require__(138);
 
 
 /***/ }),
 
-/***/ 88:
+/***/ 137:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24,15 +24,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _Renderer = __webpack_require__(20);
+var _Renderer = __webpack_require__(18);
 
 var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _bidderFactory = __webpack_require__(9);
+var _bidderFactory = __webpack_require__(6);
 
-var _mediaTypes = __webpack_require__(13);
+var _mediaTypes = __webpack_require__(12);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -40,7 +40,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 var BIDDER_CODE = 'appnexusAst';
 var URL = '//ib.adnxs.com/ut/v3/prebid';
-var SUPPORTED_AD_TYPES = ['banner', 'video', 'native'];
 var VIDEO_TARGETING = ['id', 'mimes', 'minduration', 'maxduration', 'startdelay', 'skippable', 'playback_method', 'frameworks'];
 var USER_PARAMS = ['age', 'external_uid', 'segments', 'gender', 'dnt', 'language'];
 var NATIVE_MAPPING = {
@@ -62,7 +61,7 @@ var SOURCE = 'pbjs';
 
 var spec = exports.spec = {
   code: BIDDER_CODE,
-  supportedMediaTypes: [_mediaTypes.VIDEO, _mediaTypes.NATIVE],
+  supportedMediaTypes: [_mediaTypes.BANNER, _mediaTypes.VIDEO, _mediaTypes.NATIVE],
 
   /**
    * Determines whether or not the given bid request is valid.
@@ -101,7 +100,7 @@ var spec = exports.spec = {
       user: userObj,
       sdk: {
         source: SOURCE,
-        version: '0.32.0'
+        version: '0.34.9'
       }
     };
     if (member > 0) {
@@ -123,6 +122,8 @@ var spec = exports.spec = {
    * @return {Bid[]} An array of bids which were nested inside the server.
    */
   interpretResponse: function interpretResponse(serverResponse, _ref) {
+    var _this = this;
+
     var bidderRequest = _ref.bidderRequest;
 
     serverResponse = serverResponse.body;
@@ -140,7 +141,7 @@ var spec = exports.spec = {
       serverResponse.tags.forEach((function (serverBid) {
         var rtbBid = getRtbBid(serverBid);
         if (rtbBid) {
-          if (rtbBid.cpm !== 0 && SUPPORTED_AD_TYPES.includes(rtbBid.ad_type)) {
+          if (rtbBid.cpm !== 0 && _this.supportedMediaTypes.includes(rtbBid.ad_type)) {
             var bid = newBid(serverBid, rtbBid);
             bid.mediaType = parseMediaType(rtbBid);
             bids.push(bid);
@@ -165,7 +166,6 @@ function newRenderer(adUnitCode, rtbBid) {
   var renderer = _Renderer.Renderer.install({
     id: rtbBid.renderer_id,
     url: rtbBid.renderer_url,
-    config: { adText: 'AppNexus Outstream Video Ad via Prebid.js' },
     loaded: false
   });
 
@@ -232,7 +232,10 @@ function newBid(serverBid, rtbBid) {
     dealId: rtbBid.deal_id,
     currency: 'USD',
     netRevenue: true,
-    ttl: 300
+    ttl: 300,
+    appnexus: {
+      buyerMemberId: rtbBid.buyer_member_id
+    }
   };
 
   if (rtbBid.rtb.video) {
@@ -240,7 +243,6 @@ function newBid(serverBid, rtbBid) {
       width: rtbBid.rtb.video.player_width,
       height: rtbBid.rtb.video.player_height,
       vastUrl: rtbBid.rtb.video.asset_url,
-      descriptionUrl: rtbBid.rtb.video.asset_url,
       ttl: 3600
     });
     // This supports Outstream Video
@@ -252,15 +254,23 @@ function newBid(serverBid, rtbBid) {
       bid.adResponse.ad = bid.adResponse.ads[0];
       bid.adResponse.ad.video = bid.adResponse.ad.rtb.video;
     }
-  } else if (rtbBid.rtb['native']) {
-    var nativeAd = rtbBid.rtb['native'];
-    bid['native'] = {
+  } else if (rtbBid.rtb[_mediaTypes.NATIVE]) {
+    var nativeAd = rtbBid.rtb[_mediaTypes.NATIVE];
+    bid[_mediaTypes.NATIVE] = {
       title: nativeAd.title,
       body: nativeAd.desc,
       cta: nativeAd.ctatext,
       sponsoredBy: nativeAd.sponsored,
-      image: nativeAd.main_img && nativeAd.main_img.url,
-      icon: nativeAd.icon && nativeAd.icon.url,
+      image: {
+        url: nativeAd.main_img && nativeAd.main_img.url,
+        height: nativeAd.main_img && nativeAd.main_img.height,
+        width: nativeAd.main_img && nativeAd.main_img.width
+      },
+      icon: {
+        url: nativeAd.icon && nativeAd.icon.url,
+        height: nativeAd.icon && nativeAd.icon.height,
+        width: nativeAd.icon && nativeAd.icon.width
+      },
       clickUrl: nativeAd.link.url,
       clickTrackers: nativeAd.link.click_trackers,
       impressionTrackers: nativeAd.impression_trackers
@@ -287,6 +297,7 @@ function bidToTag(bid) {
   var tag = {};
   tag.sizes = transformSizes(bid.sizes);
   tag.primary_size = tag.sizes[0];
+  tag.ad_types = [];
   tag.uuid = bid.bidId;
   if (bid.params.placementId) {
     tag.id = parseInt(bid.params.placementId, 10);
@@ -325,19 +336,24 @@ function bidToTag(bid) {
     tag.keywords = getKeywords(bid.params.keywords);
   }
 
-  if (bid.mediaType === 'native' || utils.deepAccess(bid, 'mediaTypes.native')) {
-    tag.ad_types = ['native'];
+  if (bid.mediaType === _mediaTypes.NATIVE || utils.deepAccess(bid, 'mediaTypes.native')) {
+    tag.ad_types.push(_mediaTypes.NATIVE);
 
     if (bid.nativeParams) {
       var nativeRequest = buildNativeRequest(bid.nativeParams);
-      tag['native'] = { layouts: [nativeRequest] };
+      tag[_mediaTypes.NATIVE] = { layouts: [nativeRequest] };
     }
   }
 
   var videoMediaType = utils.deepAccess(bid, 'mediaTypes.video');
   var context = utils.deepAccess(bid, 'mediaTypes.video.context');
 
-  if (bid.mediaType === 'video' || videoMediaType && context !== 'outstream') {
+  if (bid.mediaType === _mediaTypes.VIDEO || videoMediaType) {
+    tag.ad_types.push(_mediaTypes.VIDEO);
+  }
+
+  // instream gets vastUrl, outstream gets vastXml
+  if (bid.mediaType === _mediaTypes.VIDEO || videoMediaType && context !== 'outstream') {
     tag.require_asset_url = true;
   }
 
@@ -349,6 +365,10 @@ function bidToTag(bid) {
     })).forEach((function (param) {
       return tag.video[param] = bid.params.video[param];
     }));
+  }
+
+  if (utils.isEmpty(bid.mediaType) && utils.isEmpty(bid.mediaTypes) || bid.mediaType === _mediaTypes.BANNER || bid.mediaTypes && bid.mediaTypes[_mediaTypes.BANNER]) {
+    tag.ad_types.push(_mediaTypes.BANNER);
   }
 
   return tag;
@@ -447,12 +467,12 @@ function handleOutstreamRendererEvents(bid, id, eventName) {
 
 function parseMediaType(rtbBid) {
   var adType = rtbBid.ad_type;
-  if (adType === 'video') {
-    return 'video';
-  } else if (adType === 'native') {
-    return 'native';
+  if (adType === _mediaTypes.VIDEO) {
+    return _mediaTypes.VIDEO;
+  } else if (adType === _mediaTypes.NATIVE) {
+    return _mediaTypes.NATIVE;
   } else {
-    return 'banner';
+    return _mediaTypes.BANNER;
   }
 }
 
@@ -460,11 +480,11 @@ function parseMediaType(rtbBid) {
 
 /***/ }),
 
-/***/ 89:
+/***/ 138:
 /***/ (function(module, exports) {
 
 
 
 /***/ })
 
-},[87]);
+},[136]);

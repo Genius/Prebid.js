@@ -1,15 +1,15 @@
-pbjsChunk([18],{
+pbjsChunk([46],{
 
-/***/ 97:
+/***/ 149:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(98);
-module.exports = __webpack_require__(99);
+__webpack_require__(150);
+module.exports = __webpack_require__(151);
 
 
 /***/ }),
 
-/***/ 98:
+/***/ 150:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26,7 +26,7 @@ var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _bidderFactory = __webpack_require__(9);
+var _bidderFactory = __webpack_require__(6);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -123,15 +123,15 @@ function createRequestParams(bid) {
 }
 
 (0, _bidderFactory.registerBidder)(spec);
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(30)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(45)))
 
 /***/ }),
 
-/***/ 99:
+/***/ 151:
 /***/ (function(module, exports) {
 
 
 
 /***/ })
 
-},[97]);
+},[149]);

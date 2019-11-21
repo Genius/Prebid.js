@@ -1,14 +1,14 @@
-pbjsChunk([98],{
+pbjsChunk([116],{
 
-/***/ 90:
+/***/ 139:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(91);
+module.exports = __webpack_require__(140);
 
 
 /***/ }),
 
-/***/ 91:
+/***/ 140:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24,12 +24,12 @@ var _adaptermanager2 = _interopRequireDefault(_adaptermanager);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 var utils = __webpack_require__(0);
 var adloader = __webpack_require__(5);
 var bidmanager = __webpack_require__(2);
-var bidfactory = __webpack_require__(3);
-var Adapter = __webpack_require__(7)['default'];
+var bidfactory = __webpack_require__(4);
+var Adapter = __webpack_require__(9)['default'];
 
 var AppNexusAdapter;
 AppNexusAdapter = function AppNexusAdapter() {
@@ -261,4 +261,4 @@ module.exports = AppNexusAdapter;
 
 /***/ })
 
-},[90]);
+},[139]);

@@ -1,20 +1,20 @@
-pbjsChunk([32],{
+pbjsChunk([64],{
 
-/***/ 277:
+/***/ 384:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(278);
+module.exports = __webpack_require__(385);
 
 
 /***/ }),
 
-/***/ 278:
+/***/ 385:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var utils = __webpack_require__(0);
 var adloader = __webpack_require__(5);
@@ -216,4 +216,4 @@ module.exports = WideOrbitAdapter;
 
 /***/ })
 
-},[277]);
+},[384]);

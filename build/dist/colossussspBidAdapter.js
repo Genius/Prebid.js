@@ -1,14 +1,14 @@
-pbjsChunk([91],{
+pbjsChunk([109],{
 
-/***/ 110:
+/***/ 165:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(111);
+module.exports = __webpack_require__(166);
 
 
 /***/ }),
 
-/***/ 111:
+/***/ 166:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16,11 +16,11 @@ module.exports = __webpack_require__(111);
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _adapter = __webpack_require__(7);
+var _adapter = __webpack_require__(9);
 
 var _adapter2 = _interopRequireDefault(_adapter);
 
-var _bidfactory = __webpack_require__(3);
+var _bidfactory = __webpack_require__(4);
 
 var _bidfactory2 = _interopRequireDefault(_bidfactory);
 
@@ -32,9 +32,9 @@ var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 var _adaptermanager = __webpack_require__(1);
 
@@ -197,4 +197,4 @@ module.exports = ColossusSspAdapter;
 
 /***/ })
 
-},[110]);
+},[165]);

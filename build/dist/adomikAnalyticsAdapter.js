@@ -1,4 +1,4 @@
-pbjsChunk([24],{
+pbjsChunk([0],{
 
 /***/ 10:
 /***/ (function(module, exports, __webpack_require__) {
@@ -14,13 +14,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 exports['default'] = AnalyticsAdapter;
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 var _constants2 = _interopRequireDefault(_constants);
 
 var _adloader = __webpack_require__(5);
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -208,15 +208,236 @@ function AnalyticsAdapter(_ref) {
 
 /***/ }),
 
-/***/ 70:
+/***/ 100:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(71);
+"use strict";
+
+// 22.1.3.8 Array.prototype.find(predicate, thisArg = undefined)
+var $export = __webpack_require__(25);
+var $find = __webpack_require__(39)(5);
+var KEY = 'find';
+var forced = true;
+// Shouldn't skip holes
+if (KEY in []) Array(1)[KEY]((function () { forced = false; }));
+$export($export.P + $export.F * forced, 'Array', {
+  find: function find(callbackfn /* , that = undefined */) {
+    return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
+  }
+});
+__webpack_require__(27)(KEY);
 
 
 /***/ }),
 
-/***/ 71:
+/***/ 110:
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.13 ToObject(argument)
+var defined = __webpack_require__(42);
+module.exports = function (it) {
+  return Object(defined(it));
+};
+
+
+/***/ }),
+
+/***/ 111:
+/***/ (function(module, exports, __webpack_require__) {
+
+// 9.4.2.3 ArraySpeciesCreate(originalArray, length)
+var speciesConstructor = __webpack_require__(112);
+
+module.exports = function (original, length) {
+  return new (speciesConstructor(original))(length);
+};
+
+
+/***/ }),
+
+/***/ 112:
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(21);
+var isArray = __webpack_require__(113);
+var SPECIES = __webpack_require__(114)('species');
+
+module.exports = function (original) {
+  var C;
+  if (isArray(original)) {
+    C = original.constructor;
+    // cross-realm fallback
+    if (typeof C == 'function' && (C === Array || isArray(C.prototype))) C = undefined;
+    if (isObject(C)) {
+      C = C[SPECIES];
+      if (C === null) C = undefined;
+    }
+  } return C === undefined ? Array : C;
+};
+
+
+/***/ }),
+
+/***/ 113:
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.2.2 IsArray(argument)
+var cof = __webpack_require__(41);
+module.exports = Array.isArray || function isArray(arg) {
+  return cof(arg) == 'Array';
+};
+
+
+/***/ }),
+
+/***/ 114:
+/***/ (function(module, exports, __webpack_require__) {
+
+var store = __webpack_require__(115)('wks');
+var uid = __webpack_require__(117);
+var Symbol = __webpack_require__(20).Symbol;
+var USE_SYMBOL = typeof Symbol == 'function';
+
+var $exports = module.exports = function (name) {
+  return store[name] || (store[name] =
+    USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : uid)('Symbol.' + name));
+};
+
+$exports.store = store;
+
+
+/***/ }),
+
+/***/ 115:
+/***/ (function(module, exports, __webpack_require__) {
+
+var core = __webpack_require__(16);
+var global = __webpack_require__(20);
+var SHARED = '__core-js_shared__';
+var store = global[SHARED] || (global[SHARED] = {});
+
+(module.exports = function (key, value) {
+  return store[key] || (store[key] = value !== undefined ? value : {});
+})('versions', []).push({
+  version: core.version,
+  mode: __webpack_require__(116) ? 'pure' : 'global',
+  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
+});
+
+
+/***/ }),
+
+/***/ 116:
+/***/ (function(module, exports) {
+
+module.exports = true;
+
+
+/***/ }),
+
+/***/ 117:
+/***/ (function(module, exports) {
+
+var id = 0;
+var px = Math.random();
+module.exports = function (key) {
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+};
+
+
+/***/ }),
+
+/***/ 118:
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(119);
+module.exports = __webpack_require__(16).Array.findIndex;
+
+
+/***/ }),
+
+/***/ 119:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// 22.1.3.9 Array.prototype.findIndex(predicate, thisArg = undefined)
+var $export = __webpack_require__(25);
+var $find = __webpack_require__(39)(6);
+var KEY = 'findIndex';
+var forced = true;
+// Shouldn't skip holes
+if (KEY in []) Array(1)[KEY]((function () { forced = false; }));
+$export($export.P + $export.F * forced, 'Array', {
+  findIndex: function findIndex(callbackfn /* , that = undefined */) {
+    return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
+  }
+});
+__webpack_require__(27)(KEY);
+
+
+/***/ }),
+
+/***/ 39:
+/***/ (function(module, exports, __webpack_require__) {
+
+// 0 -> Array#forEach
+// 1 -> Array#map
+// 2 -> Array#filter
+// 3 -> Array#some
+// 4 -> Array#every
+// 5 -> Array#find
+// 6 -> Array#findIndex
+var ctx = __webpack_require__(37);
+var IObject = __webpack_require__(40);
+var toObject = __webpack_require__(110);
+var toLength = __webpack_require__(43);
+var asc = __webpack_require__(111);
+module.exports = function (TYPE, $create) {
+  var IS_MAP = TYPE == 1;
+  var IS_FILTER = TYPE == 2;
+  var IS_SOME = TYPE == 3;
+  var IS_EVERY = TYPE == 4;
+  var IS_FIND_INDEX = TYPE == 6;
+  var NO_HOLES = TYPE == 5 || IS_FIND_INDEX;
+  var create = $create || asc;
+  return function ($this, callbackfn, that) {
+    var O = toObject($this);
+    var self = IObject(O);
+    var f = ctx(callbackfn, that, 3);
+    var length = toLength(self.length);
+    var index = 0;
+    var result = IS_MAP ? create($this, length) : IS_FILTER ? create($this, 0) : undefined;
+    var val, res;
+    for (;length > index; index++) if (NO_HOLES || index in self) {
+      val = self[index];
+      res = f(val, index, O);
+      if (TYPE) {
+        if (IS_MAP) result[index] = res;   // map
+        else if (res) switch (TYPE) {
+          case 3: return true;             // some
+          case 5: return val;              // find
+          case 6: return index;            // findIndex
+          case 2: result.push(val);        // filter
+        } else if (IS_EVERY) return false; // every
+      }
+    }
+    return IS_FIND_INDEX ? -1 : IS_SOME || IS_EVERY ? IS_EVERY : result;
+  };
+};
+
+
+/***/ }),
+
+/***/ 97:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(98);
+
+
+/***/ }),
+
+/***/ 98:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -232,7 +453,7 @@ var _AnalyticsAdapter = __webpack_require__(10);
 
 var _AnalyticsAdapter2 = _interopRequireDefault(_AnalyticsAdapter);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 var _constants2 = _interopRequireDefault(_constants);
 
@@ -240,13 +461,21 @@ var _adaptermanager = __webpack_require__(1);
 
 var _adaptermanager2 = _interopRequireDefault(_adaptermanager);
 
+var _utils = __webpack_require__(0);
+
+var _find = __webpack_require__(99);
+
+var _find2 = _interopRequireDefault(_find);
+
+var _findIndex = __webpack_require__(118);
+
+var _findIndex2 = _interopRequireDefault(_findIndex);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-// import utils from 'src/utils';
 
 // Events used in adomik analytics adapter
 var auctionInit = _constants2['default'].EVENTS.AUCTION_INIT;
@@ -256,8 +485,6 @@ var bidResponse = _constants2['default'].EVENTS.BID_RESPONSE;
 var bidWon = _constants2['default'].EVENTS.BID_WON;
 var bidTimeout = _constants2['default'].EVENTS.BID_TIMEOUT;
 
-var bidwonTimeout = 1000;
-
 var adomikAdapter = _extends((0, _AnalyticsAdapter2['default'])({}), {
   // Track every event needed
   track: function track(_ref) {
@@ -266,11 +493,8 @@ var adomikAdapter = _extends((0, _AnalyticsAdapter2['default'])({}), {
 
     switch (eventType) {
       case auctionInit:
+        adomikAdapter.initializeBucketEvents();
         adomikAdapter.currentContext.id = args.requestId;
-        adomikAdapter.currentContext.timeout = args.timeout;
-        if (args.config.bidwonTimeout !== undefined && typeof args.config.bidwonTimeout === 'number') {
-          bidwonTimeout = args.config.bidwonTimeout;
-        }
         break;
 
       case bidTimeout:
@@ -285,12 +509,9 @@ var adomikAdapter = _extends((0, _AnalyticsAdapter2['default'])({}), {
         break;
 
       case bidWon:
-        adomikAdapter.bucketEvents.push({
-          type: 'winner',
-          event: {
-            id: args.adId,
-            placementCode: args.adUnitCode
-          }
+        adomikAdapter.sendWonEvent({
+          id: args.adId,
+          placementCode: args.adUnitCode
         });
         break;
 
@@ -307,15 +528,17 @@ var adomikAdapter = _extends((0, _AnalyticsAdapter2['default'])({}), {
         break;
 
       case auctionEnd:
-        setTimeout((function () {
-          if (adomikAdapter.bucketEvents.length > 0) {
-            adomikAdapter.sendTypedEvent();
-          }
-        }), bidwonTimeout);
+        if (adomikAdapter.bucketEvents.length > 0) {
+          adomikAdapter.sendTypedEvent();
+        }
         break;
     }
   }
 });
+
+adomikAdapter.initializeBucketEvents = function () {
+  adomikAdapter.bucketEvents = [];
+};
 
 adomikAdapter.sendTypedEvent = function () {
   var groupedTypedEvents = adomikAdapter.buildTypedEvents();
@@ -323,7 +546,6 @@ adomikAdapter.sendTypedEvent = function () {
   var bulkEvents = {
     uid: adomikAdapter.currentContext.uid,
     ahbaid: adomikAdapter.currentContext.id,
-    timeout: adomikAdapter.currentContext.timeout,
     hostname: window.location.hostname,
     eventsByPlacementCode: groupedTypedEvents.map((function (typedEventsByType) {
       var sizes = [];
@@ -353,8 +575,11 @@ adomikAdapter.sendTypedEvent = function () {
     }))
   };
 
+  var stringBulkEvents = JSON.stringify(bulkEvents);
+  (0, _utils.logInfo)('Events sent to adomik prebid analytic ' + stringBulkEvents);
+
   // Encode object in base64
-  var encodedBuf = window.btoa(JSON.stringify(bulkEvents));
+  var encodedBuf = window.btoa(stringBulkEvents);
 
   // Create final url and split it in 1600 characters max (+endpoint length)
   var encodedUri = encodeURIComponent(encodedBuf);
@@ -365,6 +590,17 @@ adomikAdapter.sendTypedEvent = function () {
     var img = new Image(1, 1);
     img.src = 'https://' + adomikAdapter.currentContext.url + '/?q=' + partUrl;
   }));
+};
+
+adomikAdapter.sendWonEvent = function (wonEvent) {
+  var stringWonEvent = JSON.stringify(wonEvent);
+  (0, _utils.logInfo)('Won event sent to adomik prebid analytic ' + wonEvent);
+
+  // Encode object in base64
+  var encodedBuf = window.btoa(stringWonEvent);
+  var encodedUri = encodeURIComponent(encodedBuf);
+  var img = new Image(1, 1);
+  img.src = 'https://' + adomikAdapter.currentContext.url + '/?q=' + encodedUri + '&id=' + adomikAdapter.currentContext.id + '&won=true';
 };
 
 adomikAdapter.buildBidResponse = function (bid) {
@@ -385,7 +621,7 @@ adomikAdapter.buildBidResponse = function (bid) {
 
 adomikAdapter.sizeUtils = {
   sizeAlreadyExists: function sizeAlreadyExists(sizes, typedEventSize) {
-    return sizes.find((function (size) {
+    return (0, _find2['default'])(sizes, (function (size) {
       return size.height === typedEventSize.height && size.width === typedEventSize.width;
     }));
   },
@@ -411,7 +647,7 @@ adomikAdapter.buildTypedEvents = function () {
         placementCode = _ref2[0],
         type = _ref2[1];
 
-    var existTypedEvent = groupedTypedEvents.findIndex((function (groupedTypedEvent) {
+    var existTypedEvent = (0, _findIndex2['default'])(groupedTypedEvents, (function (groupedTypedEvent) {
       return groupedTypedEvent.placementCode === placementCode;
     }));
 
@@ -432,23 +668,20 @@ adomikAdapter.buildTypedEvents = function () {
   return groupedTypedEvents;
 };
 
-// Initialize adomik object
-adomikAdapter.currentContext = {};
-adomikAdapter.bucketEvents = [];
-
 adomikAdapter.adapterEnableAnalytics = adomikAdapter.enableAnalytics;
 
 adomikAdapter.enableAnalytics = function (config) {
+  adomikAdapter.currentContext = {};
+
   var initOptions = config.options;
   if (initOptions) {
     adomikAdapter.currentContext = {
       uid: initOptions.id,
       url: initOptions.url,
-      debug: initOptions.debug,
       id: '',
-      timeouted: false,
-      timeout: 0
+      timeouted: false
     };
+    (0, _utils.logInfo)('Adomik Analytics enabled with config', initOptions);
     adomikAdapter.adapterEnableAnalytics(config);
   }
 };
@@ -460,6 +693,15 @@ _adaptermanager2['default'].registerAnalyticsAdapter({
 
 exports['default'] = adomikAdapter;
 
+/***/ }),
+
+/***/ 99:
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(100);
+module.exports = __webpack_require__(16).Array.find;
+
+
 /***/ })
 
-},[70]);
+},[97]);

@@ -1,20 +1,20 @@
-pbjsChunk([59],{
+pbjsChunk([83],{
 
-/***/ 210:
+/***/ 289:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(211);
+module.exports = __webpack_require__(290);
 
 
 /***/ }),
 
-/***/ 211:
+/***/ 290:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
 var utils = __webpack_require__(0);
@@ -104,4 +104,4 @@ module.exports = PulsePointAdapter;
 
 /***/ })
 
-},[210]);
+},[289]);

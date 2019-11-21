@@ -1,14 +1,14 @@
-pbjsChunk([80],{
+pbjsChunk([98],{
 
-/***/ 144:
+/***/ 202:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(145);
+module.exports = __webpack_require__(203);
 
 
 /***/ }),
 
-/***/ 145:
+/***/ 203:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27,11 +27,11 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
  * @requires src/constants
  * @requires src/utils
  */
-var Ajax = __webpack_require__(6);
-var bidfactory = __webpack_require__(3);
+var Ajax = __webpack_require__(7);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var utils = __webpack_require__(0);
-var STATUS = __webpack_require__(4).STATUS;
+var STATUS = __webpack_require__(3).STATUS;
 var adaptermanager = __webpack_require__(1);
 
 var HiroMediaAdapter = function HiroMediaAdapter() {
@@ -394,4 +394,4 @@ module.exports = HiroMediaAdapter;
 
 /***/ })
 
-},[144]);
+},[202]);

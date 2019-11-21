@@ -1,14 +1,14 @@
-pbjsChunk([44],{
+pbjsChunk([73],{
 
-/***/ 250:
+/***/ 351:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(251);
+module.exports = __webpack_require__(352);
 
 
 /***/ }),
 
-/***/ 251:
+/***/ 352:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16,8 +16,8 @@ module.exports = __webpack_require__(251);
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var Adapter = __webpack_require__(7)['default'];
-var bidfactory = __webpack_require__(3);
+var Adapter = __webpack_require__(9)['default'];
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
 var utils = __webpack_require__(0);
@@ -272,4 +272,4 @@ module.exports = StickyAdsTVAdapter;
 
 /***/ })
 
-},[250]);
+},[351]);

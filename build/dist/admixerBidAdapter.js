@@ -1,14 +1,14 @@
-pbjsChunk([103],{
+pbjsChunk([120],{
 
-/***/ 65:
+/***/ 92:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(66);
+module.exports = __webpack_require__(93);
 
 
 /***/ }),
 
-/***/ 66:
+/***/ 93:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18,9 +18,9 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
-var Ajax = __webpack_require__(6);
+var Ajax = __webpack_require__(7);
 var utils = __webpack_require__(0);
 var adaptermanager = __webpack_require__(1);
 
@@ -82,7 +82,6 @@ var AdmixerAdapter = function AdmixerAdapter() {
       if (bid.vastUrl) {
         bidObject.mediaType = 'video';
         bidObject.vastUrl = bid.vastUrl;
-        bidObject.descriptionUrl = bid.vastUrl;
       } else {
         bidObject.ad = bid.ad;
       }
@@ -109,4 +108,4 @@ module.exports = AdmixerAdapter;
 
 /***/ })
 
-},[65]);
+},[92]);

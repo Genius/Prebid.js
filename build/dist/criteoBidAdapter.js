@@ -1,20 +1,20 @@
-pbjsChunk([89],{
+pbjsChunk([107],{
 
-/***/ 117:
+/***/ 172:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(118);
+module.exports = __webpack_require__(173);
 
 
 /***/ }),
 
-/***/ 118:
+/***/ 173:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
 var adaptermanager = __webpack_require__(1);
@@ -180,4 +180,4 @@ module.exports = CriteoAdapter;
 
 /***/ })
 
-},[117]);
+},[172]);

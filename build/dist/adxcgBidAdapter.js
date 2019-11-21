@@ -1,15 +1,15 @@
-pbjsChunk([22],{
+pbjsChunk([52],{
 
-/***/ 76:
+/***/ 124:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(77);
-module.exports = __webpack_require__(78);
+__webpack_require__(125);
+module.exports = __webpack_require__(126);
 
 
 /***/ }),
 
-/***/ 77:
+/***/ 125:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24,13 +24,13 @@ var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _url = __webpack_require__(12);
+var _url = __webpack_require__(13);
 
 var url = _interopRequireWildcard(_url);
 
-var _bidderFactory = __webpack_require__(9);
+var _bidderFactory = __webpack_require__(6);
 
-var _mediaTypes = __webpack_require__(13);
+var _mediaTypes = __webpack_require__(12);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -88,14 +88,14 @@ var spec = exports.spec = {
       pathname: '/get/adi',
       search: {
         renderformat: 'javascript',
-        ver: 'r20171019PB10',
+        ver: 'r20171102PB10',
         adzoneid: adZoneIds.join(','),
         format: sizes.join(','),
         prebidBidIds: prebidBidIds.join(','),
         url: encodeURIComponent(url.format(requestUrl)),
         secure: secure ? '1' : '0',
         source: SOURCE,
-        pbjs: '0.32.0'
+        pbjs: '0.34.9'
       }
     });
 
@@ -121,9 +121,9 @@ var spec = exports.spec = {
         bid.requestId = serverResponseOneItem.bidId;
         bid.cpm = serverResponseOneItem.cpm;
         bid.creativeId = parseInt(serverResponseOneItem.creativeId);
-        bid.currency = 'USD';
+        bid.currency = serverResponseOneItem.currency ? serverResponseOneItem.currency : 'USD';
         bid.netRevenue = serverResponseOneItem.netRevenue ? serverResponseOneItem.netRevenue : true;
-        bid.ttl = 300;
+        bid.ttl = serverResponseOneItem.ttl ? serverResponseOneItem.ttl : 300;
 
         if (serverResponseOneItem.deal_id != null && serverResponseOneItem.deal_id.trim().length > 0) {
           bid.dealId = serverResponseOneItem.deal_id;
@@ -133,7 +133,6 @@ var spec = exports.spec = {
           bid.ad = serverResponseOneItem.ad;
         } else if (serverResponseOneItem.vastUrl) {
           bid.vastUrl = serverResponseOneItem.vastUrl;
-          bid.descriptionUrl = serverResponseOneItem.vastUrl;
           bid.mediaType = 'video';
         } else if (serverResponseOneItem.nativeResponse) {
           bid.mediaType = 'native';
@@ -187,11 +186,11 @@ var spec = exports.spec = {
 
 /***/ }),
 
-/***/ 78:
+/***/ 126:
 /***/ (function(module, exports) {
 
 
 
 /***/ })
 
-},[76]);
+},[124]);

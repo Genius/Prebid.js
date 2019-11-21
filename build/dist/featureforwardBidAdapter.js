@@ -1,14 +1,14 @@
-pbjsChunk([83],{
+pbjsChunk([101],{
 
-/***/ 132:
+/***/ 190:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(133);
+module.exports = __webpack_require__(191);
 
 
 /***/ }),
 
-/***/ 133:
+/***/ 191:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16,7 +16,7 @@ module.exports = __webpack_require__(133);
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _bidfactory = __webpack_require__(3);
+var _bidfactory = __webpack_require__(4);
 
 var _bidmanager = __webpack_require__(2);
 
@@ -24,9 +24,9 @@ var _adaptermanager = __webpack_require__(1);
 
 var _utils = __webpack_require__(0);
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 function FeatureForwardAdapter() {
   var bidUrl = window.location.protocol + '//prmbdr.featureforward.com/newbidder/bidder1_prm.php?';
@@ -116,4 +116,4 @@ module.exports = FeatureForwardAdapter;
 
 /***/ })
 
-},[132]);
+},[190]);

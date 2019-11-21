@@ -1,14 +1,14 @@
-pbjsChunk([109],{
+pbjsChunk([126],{
 
-/***/ 44:
+/***/ 68:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(45);
+module.exports = __webpack_require__(69);
 
 
 /***/ }),
 
-/***/ 45:
+/***/ 69:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23,11 +23,11 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
  */
 
 var utils = __webpack_require__(0);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
-var Adapter = __webpack_require__(7)['default'];
-var constants = __webpack_require__(4);
+var Adapter = __webpack_require__(9)['default'];
+var constants = __webpack_require__(3);
 var adaptermanager = __webpack_require__(1);
 
 var AARDVARK_CALLBACK_NAME = 'aardvarkResponse';
@@ -46,12 +46,22 @@ function requestBids(bidderCode, callbackName, bidReqs) {
 
   ref = ref ? ref.host : DEFAULT_REFERRER;
 
-  for (var i = 0, l = bidReqs.length, bid, _ai, _sc, _endpoint; i < l; i += 1) {
+  var categories = window.rtkcategories || [];
+  if (!Array.isArray(categories)) {
+    categories = [];
+  }
+
+  for (var i = 0, l = bidReqs.length, bid, _ai, _sc, _endpoint, _categories; i < l; i += 1) {
     bid = bidReqs[i];
     _ai = utils.getBidIdParameter('ai', bid.params);
     _sc = utils.getBidIdParameter('sc', bid.params);
     if (!_ai || !_ai.length || !_sc || !_sc.length) {
       continue;
+    }
+
+    _categories = utils.getBidIdParameter('categories', bid.params);
+    if (_categories && Array.isArray(_categories) && _categories.length) {
+      categories = categories.concat(_categories);
     }
 
     _endpoint = utils.getBidIdParameter('host', bid.params);
@@ -76,7 +86,16 @@ function requestBids(bidderCode, callbackName, bidReqs) {
     return utils.logWarn('Bad bid request params given for adapter $' + bidderCode + ' (' + AARDVARK_BIDDER_CODE + ')');
   }
 
-  adloader.loadScript(['//' + endpoint + '/', ai, '/', scs.join('_'), '/aardvark/?jsonp=pbjs.', callbackName, '&rtkreferer=', ref, '&', bidIds.join('&')].join(''));
+  var categoriesStr = '';
+  if (categories.length) {
+    categoriesStr = '&categories=' + categories.filter((function (elem, pos, arr) {
+      return arr.indexOf(elem) === pos;
+    })).map((function (c) {
+      return encodeURIComponent(c);
+    })).join(',');
+  }
+
+  adloader.loadScript(['//' + endpoint + '/', ai, '/', scs.join('_'), '/aardvark/?jsonp=pbjs.', callbackName, '&rtkreferer=', ref, categoriesStr, '&', bidIds.join('&')].join(''));
 }
 
 function registerBidResponse(bidderCode, rawBidResponse) {
@@ -159,4 +178,4 @@ module.exports = AardvarkAdapter;
 
 /***/ })
 
-},[44]);
+},[68]);

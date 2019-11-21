@@ -1,14 +1,14 @@
-pbjsChunk([70],{
+pbjsChunk([91],{
 
-/***/ 173:
+/***/ 243:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(174);
+module.exports = __webpack_require__(244);
 
 
 /***/ }),
 
-/***/ 174:
+/***/ 244:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16,10 +16,10 @@ module.exports = __webpack_require__(174);
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
-var constants = __webpack_require__(4);
+var constants = __webpack_require__(3);
 var adaptermanager = __webpack_require__(1);
 
 function MantisAdapter() {
@@ -244,4 +244,4 @@ module.exports = MantisAdapter;
 
 /***/ })
 
-},[173]);
+},[243]);

@@ -1,15 +1,15 @@
-pbjsChunk([8],{
+pbjsChunk([24],{
 
-/***/ 194:
+/***/ 272:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(195);
-module.exports = __webpack_require__(196);
+__webpack_require__(273);
+module.exports = __webpack_require__(274);
 
 
 /***/ }),
 
-/***/ 195:
+/***/ 273:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22,7 +22,7 @@ exports.spec = undefined;
 
 var _utils = __webpack_require__(0);
 
-var _bidderFactory = __webpack_require__(9);
+var _bidderFactory = __webpack_require__(6);
 
 var spec = exports.spec = {
 
@@ -68,13 +68,13 @@ function bidResponseAvailable(bidRequest, bidResponse) {
   var bids = [];
   Object.keys(idToImpMap).forEach((function (id) {
     if (idToBidMap[id]) {
-      var bid = {
-        requestId: id,
-        cpm: idToBidMap[id].price,
-        creative_id: id,
-        creativeId: id,
-        adId: id
-      };
+      var bid = {};
+      bid.requestId = id;
+      bid.creativeId = idToBidMap[id].adid;
+      bid.cpm = idToBidMap[id].price;
+      bid.currency = bidResponse.cur;
+      bid.ttl = 360;
+      bid.netRevenue = true;
       bid.ad = idToBidMap[id].adm;
       bid.ad = bid.ad.replace(/\$(%7B|\{)AUCTION_IMP_ID(%7D|\})/gi, idToBidMap[id].impid);
       bid.ad = bid.ad.replace(/\$(%7B|\{)AUCTION_AD_ID(%7D|\})/gi, idToBidMap[id].adid);
@@ -92,7 +92,7 @@ function impression(slot) {
   return {
     id: slot.bidId,
     banner: banner(slot),
-    bidfloor: '0.000001',
+    bidfloor: slot.params.bidFloor || '0.000001',
     tagid: slot.params.placementId.toString()
   };
 }
@@ -152,11 +152,11 @@ function parse(rawResponse) {
 
 /***/ }),
 
-/***/ 196:
+/***/ 274:
 /***/ (function(module, exports) {
 
 
 
 /***/ })
 
-},[194]);
+},[272]);

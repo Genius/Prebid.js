@@ -1,14 +1,14 @@
-pbjsChunk([46],{
+pbjsChunk([75],{
 
-/***/ 246:
+/***/ 347:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(247);
+module.exports = __webpack_require__(348);
 
 
 /***/ }),
 
-/***/ 247:
+/***/ 348:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18,11 +18,11 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _adapter = __webpack_require__(7);
+var _adapter = __webpack_require__(9);
 
 var _adapter2 = _interopRequireDefault(_adapter);
 
-var _bidfactory = __webpack_require__(3);
+var _bidfactory = __webpack_require__(4);
 
 var _bidfactory2 = _interopRequireDefault(_bidfactory);
 
@@ -38,7 +38,7 @@ var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 var _adaptermanager = __webpack_require__(1);
 
@@ -184,4 +184,4 @@ module.exports = Spotx;
 
 /***/ })
 
-},[246]);
+},[347]);

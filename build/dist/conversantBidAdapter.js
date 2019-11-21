@@ -1,15 +1,15 @@
-pbjsChunk([17],{
+pbjsChunk([44],{
 
-/***/ 112:
+/***/ 167:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(113);
-module.exports = __webpack_require__(114);
+__webpack_require__(168);
+module.exports = __webpack_require__(169);
 
 
 /***/ }),
 
-/***/ 113:
+/***/ 168:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24,16 +24,16 @@ var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _bidderFactory = __webpack_require__(9);
+var _bidderFactory = __webpack_require__(6);
 
-var _mediaTypes = __webpack_require__(13);
+var _mediaTypes = __webpack_require__(12);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 var BIDDER_CODE = 'conversant';
 var URL = '//media.msg.dotomi.com/s2s/header/24';
 var SYNC_URL = '//media.msg.dotomi.com/w/user.sync';
-var VERSION = '2.2.0';
+var VERSION = '2.2.1';
 
 var spec = exports.spec = {
   code: BIDDER_CODE,
@@ -80,7 +80,7 @@ var spec = exports.spec = {
    */
   buildRequests: function buildRequests(validBidRequests) {
     var loc = utils.getTopWindowLocation();
-    var page = loc.pathname + loc.search + loc.hash;
+    var page = loc.href;
     var isPageSecure = loc.protocol === 'https:' ? 1 : 0;
     var siteId = '';
     var requestId = '';
@@ -105,7 +105,10 @@ var spec = exports.spec = {
       copyOptProperty(bid.params, 'tag_id', imp, 'tagid');
 
       if (isVideoRequest(bid)) {
-        var video = { format: format };
+        var video = {
+          w: format[0].w,
+          h: format[0].h
+        };
 
         copyOptProperty(bid.params, 'position', video, 'pos');
         copyOptProperty(bid.params, 'mimes', video);
@@ -173,17 +176,16 @@ var spec = exports.spec = {
               requestId: conversantBid.impid,
               currency: serverResponse.cur || 'USD',
               cpm: responseCPM,
-              creativeId: conversantBid.crid || ''
+              creativeId: conversantBid.crid || '',
+              ttl: 300,
+              netRevenue: true
             };
 
             if (request.video) {
               bid.vastUrl = responseAd;
               bid.mediaType = 'video';
-
-              if (request.video.format.length >= 1) {
-                bid.width = request.video.format[0].w;
-                bid.height = request.video.format[0].h;
-              }
+              bid.width = request.video.w;
+              bid.height = request.video.h;
             } else {
               bid.ad = responseAd + '<img src="' + responseNurl + '" />';
               bid.width = conversantBid.w;
@@ -293,11 +295,11 @@ function copyOptProperty(src, srcName, dst, dstName) {
 
 /***/ }),
 
-/***/ 114:
+/***/ 169:
 /***/ (function(module, exports) {
 
 
 
 /***/ })
 
-},[112]);
+},[167]);

@@ -1,14 +1,14 @@
-pbjsChunk([7],{
+pbjsChunk([22],{
 
-/***/ 199:
+/***/ 278:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(200);
+module.exports = __webpack_require__(279);
 
 
 /***/ }),
 
-/***/ 200:
+/***/ 279:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16,11 +16,11 @@ module.exports = __webpack_require__(200);
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _adapter = __webpack_require__(7);
+var _adapter = __webpack_require__(9);
 
 var _adapter2 = _interopRequireDefault(_adapter);
 
-var _bidfactory = __webpack_require__(3);
+var _bidfactory = __webpack_require__(4);
 
 var _bidfactory2 = _interopRequireDefault(_bidfactory);
 
@@ -32,11 +32,11 @@ var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
-var _cookie = __webpack_require__(201);
+var _cookie = __webpack_require__(280);
 
 var _adaptermanager = __webpack_require__(1);
 
@@ -44,7 +44,7 @@ var _adaptermanager2 = _interopRequireDefault(_adaptermanager);
 
 var _config = __webpack_require__(8);
 
-var _mediaTypes = __webpack_require__(13);
+var _mediaTypes = __webpack_require__(12);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -106,6 +106,11 @@ var paramTypes = {
     'cf': tryConvertString,
     'cp': tryConvertNumber,
     'ct': tryConvertNumber
+  },
+  'conversant': {
+    'site_id': tryConvertString,
+    'secure': tryConvertNumber,
+    'mobile': tryConvertNumber
   }
 };
 
@@ -140,6 +145,27 @@ function PrebidServer() {
             }
           }
         }));
+        // will collect any custom params and place them under bid.params.keywords attribute in the following manner for pbs to ingest properly
+        // "keywords":[{"key":"randomKey","value":["123456789"]},{"key":"single_test"},{"key":"myMultiVar","value":["myValue","124578"]}]
+        var kwArray = [];
+        Object.keys(bid.params).forEach((function (key) {
+          if (bid.bidder === 'appnexus' && key !== 'member' && key !== 'invCode' && key !== 'placementId') {
+            var kvObj = {};
+            kvObj.key = key;
+            if (bid.params[key] !== null) {
+              if (Array.isArray(bid.params[key])) {
+                kvObj.value = bid.params[key].map((function (val) {
+                  return tryConvertString(val);
+                }));
+              } else {
+                kvObj.value = [tryConvertString(bid.params[key])];
+              }
+            }
+            kwArray.push(kvObj);
+            delete bid.params[key];
+          }
+        }));
+        bid.params.keywords = kwArray;
       }));
     }));
   }
@@ -147,7 +173,7 @@ function PrebidServer() {
   /* Prebid executes this function when the page asks to send out bid requests */
   baseAdapter.callBids = function (bidRequest) {
     var isDebug = !!getConfig('debug');
-    var adUnits = utils.cloneJson(bidRequest.ad_units);
+    var adUnits = utils.deepClone(bidRequest.ad_units);
     adUnits.forEach((function (adUnit) {
       var videoMediaType = utils.deepAccess(adUnit, 'mediaTypes.video');
       if (videoMediaType) {
@@ -166,7 +192,7 @@ function PrebidServer() {
       timeout_millis: config.timeout,
       secure: config.secure,
       url: utils.getTopWindowUrl(),
-      prebid_version: '0.32.0',
+      prebid_version: '0.34.9',
       ad_units: adUnits.filter(hasSizes),
       is_debug: isDebug
     };
@@ -356,7 +382,7 @@ module.exports = PrebidServer;
 
 /***/ }),
 
-/***/ 201:
+/***/ 280:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -385,4 +411,4 @@ cookie.cookieSet = function (cookieSetUrl) {
 
 /***/ })
 
-},[199]);
+},[278]);

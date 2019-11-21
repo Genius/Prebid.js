@@ -1,310 +1,244 @@
-pbjsChunk([75],{
+pbjsChunk([34],{
 
-/***/ 160:
+/***/ 227:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(161);
+__webpack_require__(228);
+module.exports = __webpack_require__(229);
 
 
 /***/ }),
 
-/***/ 161:
+/***/ 228:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _bidfactory = __webpack_require__(3);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.spec = undefined;
 
-var _bidfactory2 = _interopRequireDefault(_bidfactory);
-
-var _bidmanager = __webpack_require__(2);
-
-var _bidmanager2 = _interopRequireDefault(_bidmanager);
-
-var _adloader = __webpack_require__(5);
-
-var _adloader2 = _interopRequireDefault(_adloader);
+var _bidderFactory = __webpack_require__(6);
 
 var _utils = __webpack_require__(0);
 
-var utils = _interopRequireWildcard(_utils);
+var BIDDER_CODE = 'justpremium';
+var ENDPOINT_URL = (0, _utils.getTopWindowLocation)().protocol + '//pre.ads.justpremium.com/v/2.0/t/xhr';
+var pixels = [];
 
-var _adaptermanager = __webpack_require__(1);
+var spec = exports.spec = {
+  code: BIDDER_CODE,
+  time: 60000,
 
-var _adaptermanager2 = _interopRequireDefault(_adaptermanager);
+  isBidRequestValid: function isBidRequestValid(bid) {
+    return !!(bid && bid.params && bid.params.zone);
+  },
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var CONSTANTS = __webpack_require__(4);
-
-var JustpremiumAdapter = function JustpremiumAdapter() {
-  var top = window.top;
-  var d = void 0;
-  var bids = void 0;
-  var cookieLoaded = false;
-  var adManagerLoaded = false;
-  var jPAM = void 0;
-  var dConfig = void 0;
-  var toLoad = void 0;
-  var server = void 0;
-
-  function isCrossOriginIframe() {
-    try {
-      return !top.document;
-    } catch (e) {
-      return true;
-    }
-  }
-
-  function arrayUnique(array) {
-    var a = array.concat();
-    for (var i = 0; i < a.length; ++i) {
-      for (var j = i + 1; j < a.length; ++j) {
-        if (a[i] === a[j]) {
-          a.splice(j--, 1);
-        }
-      }
-    }
-
-    return a;
-  }
-
-  function readCookie(name) {
-    var nameEQ = name + '=';
-    var ca = document.cookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-      var c = ca[i];
-      while (c.charAt(0) == ' ') {
-        c = c.substring(1, c.length);
-      }if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-  }
-
-  function isOldBrowser() {
-    var isPromisse = typeof Promise !== 'undefined' && Promise.toString().indexOf('[native code]') !== -1;
-    var isWeakMap = typeof WeakMap !== 'undefined' && WeakMap.toString().indexOf('[native code]') !== -1;
-    return !Array.prototype.find || !Array.prototype.sort || !Array.prototype.map || !Array.prototype.filter || !Array.prototype.keys || !isPromisse || !isWeakMap;
-  }
-
-  function setupVar() {
-    d = top.document;
-    jPAM = top.jPAM = top.jPAM || window.jPAM || {};
-    dConfig = jPAM._dev || {
-      toLoad: null,
-      server: null
+  buildRequests: function buildRequests(validBidRequests) {
+    var c = preparePubCond(validBidRequests);
+    var dim = getWebsiteDim();
+    var payload = {
+      zone: validBidRequests.map((function (b) {
+        return parseInt(b.params.zone);
+      })).filter((function (value, index, self) {
+        return self.indexOf(value) === index;
+      })),
+      hostname: (0, _utils.getTopWindowLocation)().hostname,
+      protocol: (0, _utils.getTopWindowLocation)().protocol.replace(':', ''),
+      sw: dim.screenWidth,
+      sh: dim.screenHeight,
+      ww: dim.innerWidth,
+      wh: dim.innerHeight,
+      c: c,
+      id: validBidRequests[0].params.zone,
+      sizes: {}
     };
-    var libVer = readCookie('jpxhbjs') || null;
-    toLoad = dConfig.toLoad || [d.location.protocol + '//cdn-cf.justpremium.com/js/' + (libVer ? libVer + '/' : '') + (isOldBrowser() ? 'jpxp.js' : 'jpx.js')];
-    server = dConfig.server || d.location.protocol + '//pre.ads.justpremium.com/v/1.4';
-  }
+    validBidRequests.forEach((function (b) {
+      var zone = b.params.zone;
+      var sizes = payload.sizes;
+      sizes[zone] = sizes[zone] || [];
+      sizes[zone].push.apply(sizes[zone], b.sizes);
+    }));
+    var payloadString = JSON.stringify(payload);
 
-  function loadCookie() {
-    if (cookieLoaded) return;
-    cookieLoaded = true;
-    _adloader2['default'].loadScript(d.location.protocol + '//ox-d.justpremium.com/w/1.0/cj');
-  }
+    return {
+      method: 'POST',
+      url: ENDPOINT_URL + '?i=' + +new Date(),
+      data: payloadString,
+      bids: validBidRequests
+    };
+  },
 
-  function loadTag(params, callback) {
-    var keys = Object.keys(params || {});
-    var url = '' + server + (keys.length ? '/?' : '') + keys.map((function (key) {
-      return key + '=' + params[key];
-    })).join('&');
-    _adloader2['default'].loadScript(url, callback);
-  }
+  interpretResponse: function interpretResponse(serverResponse, bidRequests) {
+    var body = serverResponse.body;
+    var bidResponses = [];
+    bidRequests.bids.forEach((function (adUnit) {
+      var bid = findBid(adUnit.params, body.bid);
+      if (bid) {
+        var size = adUnit.sizes && adUnit.sizes.length && adUnit.sizes[0] || [];
+        var bidResponse = {
+          requestId: adUnit.bidId,
+          creativeId: bid.id,
+          width: size[0] || bid.width,
+          height: size[1] || bid.height,
+          ad: bid.adm,
+          cpm: bid.price,
+          netRevenue: true,
+          currency: bid.currency || 'USD',
+          ttl: bid.ttl || spec.time
+        };
+        bidResponses.push(bidResponse);
+      }
+    }));
 
-  function onLoad() {
-    jPAM = top.jPAM = Jpx.JAM.instance({
-      plugins: ['bidder']
-    });
-  }
+    return bidResponses;
+  },
 
-  function loadResources() {
-    if (toLoad.length > 0) {
-      _adloader2['default'].loadScript(toLoad.shift(), (function () {
-        loadResources();
-      }));
-    } else {
-      onLoad();
+  getUserSyncs: function getUserSyncs(syncOptions) {
+    if (syncOptions.iframeEnabled) {
+      pixels.push({
+        type: 'iframe',
+        src: '//us-u.openx.net/w/1.0/pd?plm=10&ph=26e53f82-d199-49df-9eca-7b350c0f9646'
+      });
+    }
+    return pixels;
+  }
+};
+
+function findBid(params, bids) {
+  var tagId = params.zone;
+  if (bids[tagId]) {
+    var len = bids[tagId].length;
+    while (len--) {
+      if (passCond(params, bids[tagId][len])) {
+        return bids[tagId].splice(len, 1).pop();
+      }
     }
   }
 
-  function loadAdManager() {
-    if (adManagerLoaded) return;
-    if (managerAlreadyDefined()) {
-      if (!jPAM.hasPlugin('bidder')) {
-        return jPAM.addPlugin('bidder');
-      }
+  return false;
+}
+
+function passCond(params, bid) {
+  var format = bid.format;
+
+  if (params.allow && params.allow.length) {
+    return params.allow.indexOf(format) > -1;
+  }
+
+  if (params.exclude && params.exclude.length) {
+    return params.exclude.indexOf(format) < 0;
+  }
+
+  return true;
+}
+
+function preparePubCond(bids) {
+  var cond = {};
+  var count = {};
+
+  bids.forEach((function (bid) {
+    var params = bid.params;
+    var zone = params.zone;
+
+    if (cond[zone] === 1) {
       return;
     }
-    adManagerLoaded = true;
-    loadResources();
-  }
 
-  function managerAlreadyDefined() {
-    return top.jPAM && top.jPAM.initialized;
-  }
+    var allow = params.allow || params.formats || [];
+    var exclude = params.exclude || [];
 
-  function findBid(zone, bids) {
-    var len = bids.length;
-    while (len--) {
-      if (parseInt(bids[len].params.zone) === parseInt(zone)) {
-        var rec = bids.splice(len, 1);
-        return rec.length ? rec.pop() : false;
+    if (allow.length === 0 && exclude.length === 0) {
+      return cond[params.zone] = 1;
+    }
+
+    cond[zone] = cond[zone] || [[], {}];
+    cond[zone][0] = arrayUnique(cond[zone][0].concat(allow));
+    exclude.forEach((function (e) {
+      if (!cond[zone][1][e]) {
+        cond[zone][1][e] = 1;
+      } else {
+        cond[zone][1][e]++;
       }
+    }));
+
+    count[zone] = count[zone] || 0;
+    if (exclude.length) {
+      count[zone]++;
     }
-    return false;
-  }
+  }));
 
-  function handleError(err, zone, reqBids) {
-    var bid = findBid(zone, reqBids);
-    while (bid) {
-      var bidObject = _bidfactory2['default'].createBid(CONSTANTS.STATUS.NO_BID, bid);
-      bidObject.bidderCode = 'justpremium';
-      _bidmanager2['default'].addBidResponse(bid.placementCode, bidObject);
-      bid = findBid(zone, reqBids);
-    }
-    utils.logError(err);
-  }
+  Object.keys(count).forEach((function (zone) {
+    if (cond[zone] === 1) return;
 
-  function addBidResponse(zone, reqBids) {
-    var jPAM = window.top.jPAM = window.top.jPAM || window.jPAM || {};
-    var c = jPAM.cb = jPAM.cb || {};
+    var exclude = [];
+    Object.keys(cond[zone][1]).forEach((function (format) {
+      if (cond[zone][1][format] === count[zone]) {
+        exclude.push(format);
+      }
+    }));
+    cond[zone][1] = exclude;
+  }));
 
-    reqBids.filter((function (r) {
-      return parseInt(r.params.zone) === parseInt(zone);
-    })).forEach((function (bid) {
-      var bidder = c['bidder' + zone];
-
-      _bidmanager2['default'].addBidResponse(bid.placementCode, bidder.createBid((function (ad) {
-        var bidObject = void 0;
-        if (!ad) {
-          bidObject = _bidfactory2['default'].createBid(CONSTANTS.STATUS.NO_BID, bid);
-          bidObject.bidderCode = 'justpremium';
-          return bidObject;
+  Object.keys(cond).forEach((function (zone) {
+    if (cond[zone] !== 1 && cond[zone][1].length) {
+      cond[zone][0].forEach((function (r) {
+        var idx = cond[zone][1].indexOf(r);
+        if (idx > -1) {
+          cond[zone][1].splice(idx, 1);
         }
-        bidObject = _bidfactory2['default'].createBid(CONSTANTS.STATUS.GOOD, bid);
-        bidObject.bidderCode = 'justpremium';
-        bidObject.adSlot = bid.adSlot;
-        return bidObject;
-      }), bid));
-    }));
-  }
-
-  function requestBids(bids) {
-    var pubCond = preparePubCond(bids);
-    var reqBids = bids.concat();
-
-    Object.keys(pubCond).forEach((function (zone) {
-      loadTag({
-        zone: zone,
-        hostname: d.location.hostname,
-        protocol: d.location.protocol.replace(':', ''),
-        sw: top.screen.width,
-        sh: top.screen.height,
-        ww: top.innerWidth,
-        wh: top.innerHeight,
-        c: encodeURIComponent(JSON.stringify(pubCond[zone])),
-        id: zone,
-        i: +new Date()
-      }, (function (err) {
-        if (err) {
-          handleError(err, zone, reqBids);
-        }
-        addBidResponse(zone, reqBids);
-      }), true);
-    }));
-  }
-
-  function preparePubCond(bids) {
-    var cond = {};
-    var count = {};
-
-    bids.forEach((function (bid) {
-      var params = bid.params || {};
-      var zone = params.zone;
-
-      if (!zone) {
-        throw new Error('JustPremium: Bid should contains zone id.');
-      }
-
-      if (cond[zone] === 1) {
-        return;
-      }
-
-      var allow = params.allow || params.formats || [];
-      var exclude = params.exclude || [];
-
-      if (allow.length === 0 && exclude.length === 0) {
-        return cond[params.zone] = 1;
-      }
-
-      cond[zone] = cond[zone] || [[], {}];
-      cond[zone][0] = arrayUnique(cond[zone][0].concat(allow));
-      exclude.forEach((function (e) {
-        if (!cond[zone][1][e]) {
-          cond[zone][1][e] = 1;
-        } else cond[zone][1][e]++;
       }));
-
-      count[zone] = count[zone] || 0;
-      if (exclude.length) count[zone]++;
-    }));
-
-    Object.keys(count).forEach((function (zone) {
-      if (cond[zone] === 1) return;
-
-      var exclude = [];
-      Object.keys(cond[zone][1]).forEach((function (format) {
-        if (cond[zone][1][format] === count[zone]) exclude.push(format);
-      }));
-      cond[zone][1] = exclude;
-    }));
-
-    Object.keys(cond).forEach((function (zone) {
-      if (cond[zone] !== 1 && cond[zone][1].length) {
-        cond[zone][0].forEach((function (r) {
-          var idx = cond[zone][1].indexOf(r);
-          if (idx > -1) {
-            cond[zone][1].splice(idx, 1);
-          }
-        }));
-        cond[zone][0].length = 0;
-      }
-
-      if (cond[zone] !== 1 && !cond[zone][0].length && !cond[zone][1].length) cond[zone] = 1;
-    }));
-
-    return cond;
-  }
-
-  function callBids(params) {
-    bids = params.bids || [];
-
-    if (!isCrossOriginIframe()) {
-      setupVar();
-      loadCookie();
-      loadAdManager();
-      requestBids(bids);
-    } else {
-      bids.forEach((function (bid) {
-        handleError(new Error('Justpremium: Adapter does not support cross origin iframe.'), bid.params.zone, bids);
-      }));
+      cond[zone][0].length = 0;
     }
+
+    if (cond[zone] !== 1 && !cond[zone][0].length && !cond[zone][1].length) {
+      cond[zone] = 1;
+    }
+  }));
+
+  return cond;
+}
+
+function arrayUnique(array) {
+  var a = array.concat();
+  for (var i = 0; i < a.length; ++i) {
+    for (var j = i + 1; j < a.length; ++j) {
+      if (a[i] === a[j]) {
+        a.splice(j--, 1);
+      }
+    }
+  }
+
+  return a;
+}
+
+function getWebsiteDim() {
+  var top = void 0;
+  try {
+    top = window.top;
+  } catch (e) {
+    top = window;
   }
 
   return {
-    callBids: callBids
+    screenWidth: top.screen.width,
+    screenHeight: top.screen.height,
+    innerWidth: top.innerWidth,
+    innerHeight: top.innerHeight
   };
-};
+}
 
-_adaptermanager2['default'].registerBidAdapter(new JustpremiumAdapter(), 'justpremium');
+(0, _bidderFactory.registerBidder)(spec);
 
-module.exports = JustpremiumAdapter;
+/***/ }),
+
+/***/ 229:
+/***/ (function(module, exports) {
+
+
 
 /***/ })
 
-},[160]);
+},[227]);

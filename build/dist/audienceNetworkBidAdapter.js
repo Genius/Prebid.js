@@ -1,15 +1,15 @@
-pbjsChunk([19],{
+pbjsChunk([47],{
 
-/***/ 94:
+/***/ 146:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(95);
-module.exports = __webpack_require__(96);
+__webpack_require__(147);
+module.exports = __webpack_require__(148);
 
 
 /***/ }),
 
-/***/ 95:
+/***/ 147:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27,11 +27,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                                                                                                                                                                                                                                                                                */
 
 
-var _bidderFactory = __webpack_require__(9);
+var _bidderFactory = __webpack_require__(6);
 
 var _config = __webpack_require__(8);
 
-var _url = __webpack_require__(12);
+var _url = __webpack_require__(13);
 
 var _utils = __webpack_require__(0);
 
@@ -60,6 +60,15 @@ var isBidRequestValid = function isBidRequestValid(bid) {
  */
 var flattenSize = function flattenSize(size) {
   return Array.isArray(size) && size.length === 2 ? size[0] + 'x' + size[1] : size;
+};
+
+/**
+ * Expands a 'WxH' string as a 2-element [W, H] array
+ * @param {String} size
+ * @returns {Array}
+ */
+var expandSize = function expandSize(size) {
+  return size.split('x').map(Number);
 };
 
 /**
@@ -112,6 +121,14 @@ var createAdHtml = function createAdHtml(placementId, format, bidId) {
 };
 
 /**
+ * Get the current window location URL correctly encoded for use in a URL query string.
+ * @returns {String} URI-encoded URL
+ */
+var getTopWindowUrlEncoded = function getTopWindowUrlEncoded() {
+  return encodeURIComponent((0, _utils.getTopWindowUrl)());
+};
+
+/**
  * Convert each bid request to a single URL to fetch those bids.
  * @param {Array} bids - list of bids
  * @param {String} bids[].placementCode - Prebid placement identifier
@@ -144,7 +161,7 @@ var buildRequests = function buildRequests(bids) {
 
   // Build URL
   var testmode = isTestmode();
-  var pageurl = (0, _utils.getTopWindowUrl)();
+  var pageurl = getTopWindowUrlEncoded();
   var search = {
     placementids: placementids,
     adformats: adformats,
@@ -201,9 +218,10 @@ var interpretResponse = function interpretResponse(_ref, _ref2) {
 
     var format = adformats[i];
 
-    var _sizes$i = _slicedToArray(sizes[i], 2),
-        width = _sizes$i[0],
-        height = _sizes$i[1];
+    var _expandSize = expandSize(flattenSize(sizes[i])),
+        _expandSize2 = _slicedToArray(_expandSize, 2),
+        width = _expandSize2[0],
+        height = _expandSize2[1];
 
     var ad = createAdHtml(creativeId, format, fb_bidid);
     var requestId = requestIds[i];
@@ -227,9 +245,9 @@ var interpretResponse = function interpretResponse(_ref, _ref2) {
     };
     // Video attributes
     if (isVideo(format)) {
-      var pageurl = (0, _utils.getTopWindowUrl)();
+      var pageurl = getTopWindowUrlEncoded();
       bidResponse.mediaType = 'video';
-      bidResponse.vastUrl = 'https://an.facebook.com/v1/instream/vast.xml?placementid=' + creativeId + '&pageurl=' + encodeURIComponent(pageurl) + '&playerwidth=' + width + '&playerheight=' + height + '&bidid=' + fb_bidid;
+      bidResponse.vastUrl = 'https://an.facebook.com/v1/instream/vast.xml?placementid=' + creativeId + '&pageurl=' + pageurl + '&playerwidth=' + width + '&playerheight=' + height + '&bidid=' + fb_bidid;
     }
     return bidResponse;
   }));
@@ -247,11 +265,11 @@ var spec = exports.spec = {
 
 /***/ }),
 
-/***/ 96:
+/***/ 148:
 /***/ (function(module, exports) {
 
 
 
 /***/ })
 
-},[94]);
+},[146]);

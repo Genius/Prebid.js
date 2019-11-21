@@ -1,53 +1,47 @@
-pbjsChunk([67],{
+pbjsChunk([28],{
 
-/***/ 181:
+/***/ 254:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(182);
+__webpack_require__(255);
+module.exports = __webpack_require__(256);
 
 
 /***/ }),
 
-/***/ 182:
+/***/ 255:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.spec = undefined;
 
-var bidfactory = __webpack_require__(3);
-var bidmanager = __webpack_require__(2);
-var ajax = __webpack_require__(6);
-var CONSTANTS = __webpack_require__(4);
+var _bidderFactory = __webpack_require__(6);
+
 var utils = __webpack_require__(0);
-var adaptermanager = __webpack_require__(1);
+var BIDDER_CODE = 'mobfox';
+var BID_REQUEST_BASE_URL = 'https://my.mobfox.com/request.php';
+var CPM_HEADER = 'X-Pricing-CPM';
 
-function MobfoxAdapter() {
-  var BIDDER_CODE = 'mobfox';
-  var BID_REQUEST_BASE_URL = 'https://my.mobfox.com/request.php';
-
-  // request
-  function buildQueryStringFromParams(params) {
-    for (var key in params) {
-      if (params.hasOwnProperty(key)) {
-        if (params[key] === undefined) {
-          delete params[key];
-        } else {
-          params[key] = encodeURIComponent(params[key]);
-        }
-      }
+var spec = exports.spec = {
+  code: BIDDER_CODE,
+  aliases: ['mf'], // short code
+  isBidRequestValid: function isBidRequestValid(bid) {
+    return bid.params.s !== null && bid.params.s !== undefined && bid.requestId !== null && bid.requestId !== undefined;
+  },
+  buildRequests: function buildRequests(validBidRequests) {
+    if (validBidRequests.length > 1) {
+      throw 'invalid number of valid bid requests, expected 1 element';
     }
 
-    return utils._map(Object.keys(params), (function (key) {
-      return key + '=' + params[key];
-    })).join('&');
-  }
+    var bidParams = validBidRequests[0].params;
+    var bid = validBidRequests[0];
 
-  function buildBidRequest(bid) {
-    var bidParams = bid.params;
-
-    var requestParams = {
+    var params = {
       // -------------------- Mandatory Parameters ------------------
       rt: bidParams.rt || 'api-fetchip',
       r_type: bidParams.r_type || 'banner',
@@ -99,106 +93,75 @@ function MobfoxAdapter() {
       n_rating_req: bidParams.n_rating_req || undefined
     };
 
-    return requestParams;
-  }
+    var payloadString = buildPayloadString(params);
 
-  function sendBidRequest(bid) {
-    var requestParams = buildBidRequest(bid);
-    var queryString = buildQueryStringFromParams(requestParams);
+    return {
+      method: 'GET',
+      url: BID_REQUEST_BASE_URL,
+      data: payloadString,
+      requestId: bid.bidId
+    };
+  },
+  interpretResponse: function interpretResponse(serverResponse, bidRequest) {
+    var bidResponses = [];
+    var serverResponseBody = serverResponse.body;
 
-    ajax.ajax(BID_REQUEST_BASE_URL + '?' + queryString, {
-      success: function success(resp, xhr) {
-        if (xhr.getResponseHeader('Content-Type') == 'application/json') {
-          try {
-            resp = JSON.parse(resp);
-          } catch (e) {
-            resp = { error: resp };
-          }
-        }
-        onBidResponse({
-          data: resp,
-          xhr: xhr
-        }, bid);
-      },
-      error: function error(err) {
-        if (xhr.getResponseHeader('Content-Type') == 'application/json') {
-          try {
-            err = JSON.parse(err);
-          } catch (e) {}
-          ;
-        }
-        onBidResponseError(bid, [err]);
+    if (!serverResponseBody || serverResponseBody.error) {
+      var errorMessage = 'in response for ' + BIDDER_CODE + ' adapter';
+      if (serverResponseBody && serverResponseBody.error) {
+        errorMessage += ': ' + serverResponseBody.error;
       }
-    });
-  }
-
-  // response
-  function onBidResponseError(bid, err) {
-    utils.logError.apply(utils, ['Bid Response Error', bid].concat(_toConsumableArray(err)));
-    var bidResponse = bidfactory.createBid(CONSTANTS.STATUS.NO_BID, bid);
-    bidResponse.bidderCode = BIDDER_CODE;
-    bidmanager.addBidResponse(bid.placementCode, bidResponse);
-  }
-
-  function onBidResponse(bidderResponse, bid) {
-    // transform the response to a valid prebid response
+      utils.logError(errorMessage);
+      return bidResponses;
+    }
     try {
-      var bidResponse = transformResponse(bidderResponse, bid);
-      bidmanager.addBidResponse(bid.placementCode, bidResponse);
+      var serverResponseHeaders = serverResponse.headers;
+      var bidRequestData = bidRequest.data.split('&');
+      var bidResponse = {
+        requestId: bidRequest.requestId,
+        cpm: serverResponseHeaders.get(CPM_HEADER),
+        width: bidRequestData[5].split('=')[1],
+        height: bidRequestData[6].split('=')[1],
+        creativeId: bidRequestData[3].split('=')[1],
+        currency: 'USD',
+        netRevenue: true,
+        ttl: 360,
+        referrer: serverResponseBody.request.clickurl,
+        ad: serverResponseBody.request.htmlString
+      };
+      bidResponses.push(bidResponse);
     } catch (e) {
-      onBidResponseError(bid, [e]);
+      throw 'could not build bid response: ' + e;
+    }
+    return bidResponses;
+  }
+};
+
+function buildPayloadString(params) {
+  for (var key in params) {
+    if (params.hasOwnProperty(key)) {
+      if (params[key] === undefined) {
+        delete params[key];
+      } else {
+        params[key] = encodeURIComponent(params[key]);
+      }
     }
   }
 
-  function transformResponse(bidderResponse, bid) {
-    var responseBody = bidderResponse.data;
-
-    // Validate Request
-    var err = responseBody.error;
-    if (err) {
-      throw err;
-    }
-
-    var htmlString = responseBody.request && responseBody.request.htmlString;
-    if (!htmlString) {
-      throw ['htmlString is missing', responseBody];
-    }
-
-    var cpm = void 0;
-    var cpmHeader = bidderResponse.xhr.getResponseHeader('X-Pricing-CPM');
-    try {
-      cpm = Number(cpmHeader);
-    } catch (e) {
-      throw ['Invalid CPM value:', cpmHeader];
-    }
-
-    // Validations passed - Got bid
-    var bidResponse = bidfactory.createBid(CONSTANTS.STATUS.GOOD, bid);
-    bidResponse.bidderCode = BIDDER_CODE;
-
-    bidResponse.ad = htmlString;
-    bidResponse.cpm = cpm;
-
-    bidResponse.width = bid.sizes[0][0];
-    bidResponse.height = bid.sizes[0][1];
-
-    return bidResponse;
-  }
-
-  // prebid api
-  function callBids(params) {
-    var bids = params.bids || [];
-    bids.forEach(sendBidRequest);
-  }
-
-  return {
-    callBids: callBids
-  };
+  return utils._map(Object.keys(params), (function (key) {
+    return key + '=' + params[key];
+  })).join('&');
 }
 
-adaptermanager.registerBidAdapter(new MobfoxAdapter(), 'mobfox');
-module.exports = MobfoxAdapter;
+(0, _bidderFactory.registerBidder)(spec);
+
+/***/ }),
+
+/***/ 256:
+/***/ (function(module, exports) {
+
+
 
 /***/ })
 
-},[181]);
+},[254]);

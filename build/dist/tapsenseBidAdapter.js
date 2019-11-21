@@ -1,14 +1,14 @@
-pbjsChunk([43],{
+pbjsChunk([72],{
 
-/***/ 252:
+/***/ 353:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(253);
+module.exports = __webpack_require__(354);
 
 
 /***/ }),
 
-/***/ 253:
+/***/ 354:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16,7 +16,7 @@ module.exports = __webpack_require__(253);
 
 // v0.0.1
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
 var utils = __webpack_require__(0);
@@ -96,4 +96,4 @@ module.exports = TapSenseAdapter;
 
 /***/ })
 
-},[252]);
+},[353]);

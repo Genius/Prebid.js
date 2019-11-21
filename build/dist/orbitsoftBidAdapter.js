@@ -1,14 +1,14 @@
-pbjsChunk([64],{
+pbjsChunk([87],{
 
-/***/ 190:
+/***/ 268:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(191);
+module.exports = __webpack_require__(269);
 
 
 /***/ }),
 
-/***/ 191:
+/***/ 269:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18,13 +18,13 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _utils = __webpack_require__(0);
 
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 var bidmanager = __webpack_require__(2);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var adloader = __webpack_require__(5);
 var utils = __webpack_require__(0);
 var adaptermanager = __webpack_require__(1);
-var Adapter = __webpack_require__(7)['default'];
+var Adapter = __webpack_require__(9)['default'];
 
 var ORBITSOFT_BIDDERCODE = 'orbitsoft';
 var styleParamsToFieldsMap = {
@@ -247,4 +247,4 @@ module.exports = OrbitsoftAdapter;
 
 /***/ })
 
-},[190]);
+},[268]);

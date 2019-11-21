@@ -1,22 +1,22 @@
-pbjsChunk([33],{
+pbjsChunk([65],{
 
-/***/ 275:
+/***/ 382:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(276);
+module.exports = __webpack_require__(383);
 
 
 /***/ }),
 
-/***/ 276:
+/***/ 383:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 var utils = __webpack_require__(0);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
 var adaptermanager = __webpack_require__(1);
@@ -89,4 +89,4 @@ module.exports = VertozAdapter;
 
 /***/ })
 
-},[275]);
+},[382]);

@@ -1,21 +1,21 @@
-pbjsChunk([96],{
+pbjsChunk([114],{
 
-/***/ 100:
+/***/ 152:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(101);
+module.exports = __webpack_require__(153);
 
 
 /***/ }),
 
-/***/ 101:
+/***/ 153:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var bidmanager = __webpack_require__(2);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var utils = __webpack_require__(0);
 var adloader = __webpack_require__(5);
 var adaptermanager = __webpack_require__(1);
@@ -75,4 +75,4 @@ module.exports = BidfluenceAdapter;
 
 /***/ })
 
-},[100]);
+},[152]);

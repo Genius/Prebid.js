@@ -1,14 +1,14 @@
-pbjsChunk([88],{
+pbjsChunk([106],{
 
-/***/ 119:
+/***/ 174:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(120);
+module.exports = __webpack_require__(175);
 
 
 /***/ }),
 
-/***/ 120:
+/***/ 175:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24,13 +24,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 exports.setConfig = setConfig;
 exports.addBidResponseHook = addBidResponseHook;
 
-var _bidfactory = __webpack_require__(3);
+var _bidfactory = __webpack_require__(4);
 
 var _bidfactory2 = _interopRequireDefault(_bidfactory);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
 var _utils = __webpack_require__(0);
 
@@ -288,4 +288,4 @@ function roundFloat(num, dec) {
 
 /***/ })
 
-},[119]);
+},[174]);

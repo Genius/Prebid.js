@@ -1,20 +1,20 @@
-pbjsChunk([100],{
+pbjsChunk([117],{
 
-/***/ 81:
+/***/ 129:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(82);
+module.exports = __webpack_require__(130);
 
 
 /***/ }),
 
-/***/ 82:
+/***/ 130:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _bidfactory = __webpack_require__(3);
+var _bidfactory = __webpack_require__(4);
 
 var _bidfactory2 = _interopRequireDefault(_bidfactory);
 
@@ -26,9 +26,9 @@ var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 var _adaptermanager = __webpack_require__(1);
 
@@ -65,7 +65,6 @@ var AerServAdapter = function AerServAdapter() {
       bid.height = response.h;
       if (bidRequest.mediaType === 'video') {
         bid.vastUrl = response.vastUrl;
-        bid.descriptionUrl = response.vastUrl;
         bid.mediaType = 'video';
       } else {
         bid.ad = response.adm;
@@ -157,4 +156,4 @@ module.exports = AerServAdapter;
 
 /***/ })
 
-},[81]);
+},[129]);

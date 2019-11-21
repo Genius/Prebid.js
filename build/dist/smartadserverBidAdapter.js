@@ -1,24 +1,24 @@
-pbjsChunk([50],{
+pbjsChunk([78],{
 
-/***/ 238:
+/***/ 335:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(239);
+module.exports = __webpack_require__(336);
 
 
 /***/ }),
 
-/***/ 239:
+/***/ 336:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var utils = __webpack_require__(0);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
-var url = __webpack_require__(12);
+var url = __webpack_require__(13);
 var adaptermanager = __webpack_require__(1);
 
 var SmartAdServer = function SmartAdServer() {
@@ -33,6 +33,7 @@ var SmartAdServer = function SmartAdServer() {
         bidObject.cpm = adUnit.cpm;
         bidObject.currency = adUnit.currency;
         bidObject.ad = adUnit.ad;
+        bidObject.adUrl = adUnit.adUrl;
         bidObject.width = adUnit.width;
         bidObject.height = adUnit.height;
         bidObject.dealId = adUnit.dealId;
@@ -65,7 +66,8 @@ var SmartAdServer = function SmartAdServer() {
           'sizes': bid.sizes.map((function (size) {
             return size[0] + 'x' + size[1];
           })).join(','),
-          'async': 1
+          'async': 1,
+          'prebidVersion': '0.34.9'
         };
         adloader.loadScript(url.format(adCall));
       }
@@ -79,4 +81,4 @@ module.exports = SmartAdServer;
 
 /***/ })
 
-},[238]);
+},[335]);

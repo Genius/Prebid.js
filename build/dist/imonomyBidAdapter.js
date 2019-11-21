@@ -1,14 +1,14 @@
-pbjsChunk([79],{
+pbjsChunk([97],{
 
-/***/ 146:
+/***/ 207:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(147);
+module.exports = __webpack_require__(208);
 
 
 /***/ }),
 
-/***/ 147:
+/***/ 208:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20,9 +20,9 @@ Updated : 2017-03-15 */
 var utils = __webpack_require__(0);
 var adloader = __webpack_require__(5);
 var bidmanager = __webpack_require__(2);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var adaptermanager = __webpack_require__(1);
-var STATUSCODES = __webpack_require__(4).STATUS;
+var STATUSCODES = __webpack_require__(3).STATUS;
 
 function ImonomyAdapter() {
   return {
@@ -212,4 +212,4 @@ module.exports = ImonomyAdapter;
 
 /***/ })
 
-},[146]);
+},[207]);

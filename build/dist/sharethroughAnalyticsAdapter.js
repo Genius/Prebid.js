@@ -1,4 +1,4 @@
-pbjsChunk([1],{
+pbjsChunk([11],{
 
 /***/ 10:
 /***/ (function(module, exports, __webpack_require__) {
@@ -14,13 +14,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 exports['default'] = AnalyticsAdapter;
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 var _constants2 = _interopRequireDefault(_constants);
 
 var _adloader = __webpack_require__(5);
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -208,15 +208,15 @@ function AnalyticsAdapter(_ref) {
 
 /***/ }),
 
-/***/ 234:
+/***/ 322:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(235);
+module.exports = __webpack_require__(323);
 
 
 /***/ }),
 
-/***/ 235:
+/***/ 323:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -287,7 +287,7 @@ var sharethroughAdapter = _extends((0, _AnalyticsAdapter2['default'])({
     this.fireBeacon(loseBeaconUrl);
   },
   appendEnvFields: function appendEnvFields(url) {
-    url = utils.tryAppendQueryString(url, 'hbVersion', '0.32.0');
+    url = utils.tryAppendQueryString(url, 'hbVersion', '0.34.9');
     url = utils.tryAppendQueryString(url, 'strVersion', STR_VERSION);
     url = utils.tryAppendQueryString(url, 'hbSource', 'prebid');
 
@@ -308,4 +308,4 @@ exports['default'] = sharethroughAdapter;
 
 /***/ })
 
-},[234]);
+},[322]);

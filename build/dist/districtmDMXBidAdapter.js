@@ -1,20 +1,20 @@
-pbjsChunk([87],{
+pbjsChunk([105],{
 
-/***/ 124:
+/***/ 179:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(125);
+module.exports = __webpack_require__(180);
 
 
 /***/ }),
 
-/***/ 125:
+/***/ 180:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adLoader = __webpack_require__(5);
 var adaptermanager = __webpack_require__(1);
@@ -75,4 +75,4 @@ module.exports = DistrictmAdaptor;
 
 /***/ })
 
-},[124]);
+},[179]);

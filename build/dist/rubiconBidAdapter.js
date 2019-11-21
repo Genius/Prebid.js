@@ -1,14 +1,14 @@
-pbjsChunk([55],{
+pbjsChunk([80],{
 
-/***/ 226:
+/***/ 312:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(227);
+module.exports = __webpack_require__(313);
 
 
 /***/ }),
 
-/***/ 227:
+/***/ 313:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30,13 +30,15 @@ var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _bidderFactory = __webpack_require__(9);
+var _bidderFactory = __webpack_require__(6);
 
 var _config = __webpack_require__(8);
 
+var _mediaTypes = __webpack_require__(12);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-var INTEGRATION = 'pbjs_lite_v0.32.0';
+var INTEGRATION = 'pbjs_lite_v0.34.9';
 
 function isSecure() {
   return location.protocol === 'https:';
@@ -45,13 +47,14 @@ function isSecure() {
 // use protocol relative urls for http or https
 var FASTLANE_ENDPOINT = '//fastlane.rubiconproject.com/a/api/fastlane.json';
 var VIDEO_ENDPOINT = '//fastlane-adv.rubiconproject.com/v1/auction/video';
-var SYNC_ENDPOINT = 'https://tap-secure.rubiconproject.com/partner/scripts/rubicon/emily.html?rtb_ext=1';
+var SYNC_ENDPOINT = 'https://eus.rubiconproject.com/usync.html';
 
 var TIMEOUT_BUFFER = 500;
 
 var sizeMap = {
   1: '468x60',
   2: '728x90',
+  5: '120x90',
   8: '120x600',
   9: '160x600',
   10: '300x600',
@@ -63,6 +66,7 @@ var sizeMap = {
   31: '980x120',
   32: '250x360',
   33: '180x500',
+  34: '580x400',
   35: '980x150',
   37: '468x400',
   38: '930x180',
@@ -76,9 +80,11 @@ var sizeMap = {
   59: '320x80',
   60: '320x150',
   61: '1000x1000',
+  64: '580x500',
   65: '640x480',
   67: '320x480',
   68: '1800x1000',
+  69: '480x400',
   72: '320x320',
   73: '320x160',
   78: '980x240',
@@ -90,11 +96,16 @@ var sizeMap = {
   101: '480x320',
   102: '768x1024',
   103: '480x280',
+  108: '320x240',
   113: '1000x300',
   117: '320x100',
   125: '800x250',
   126: '200x600',
-  195: '600x300'
+  144: '980x600',
+  195: '600x300',
+  199: '640x200',
+  213: '1030x590',
+  214: '980x360'
 };
 utils._each(sizeMap, (function (item, key) {
   return sizeMap[item] = key;
@@ -103,7 +114,7 @@ utils._each(sizeMap, (function (item, key) {
 var spec = exports.spec = {
   code: 'rubicon',
   aliases: ['rubiconLite'],
-  supportedMediaTypes: ['video'],
+  supportedMediaTypes: [_mediaTypes.BANNER, _mediaTypes.VIDEO],
   /**
    * @param {object} bid
    * @return boolean
@@ -123,8 +134,9 @@ var spec = exports.spec = {
       return false;
     }
 
-    if (bid.mediaType === 'video') {
-      if (_typeof(params.video) !== 'object' || !params.video.size_id) {
+    if (spec.hasVideoMediaType(bid)) {
+      // support instream only
+      if (utils.deepAccess(bid, 'mediaTypes.' + _mediaTypes.VIDEO) && utils.deepAccess(bid, 'mediaTypes.' + _mediaTypes.VIDEO + '.context') !== 'instream' || _typeof(params.video) !== 'object' || !params.video.size_id) {
         return false;
       }
     }
@@ -139,12 +151,13 @@ var spec = exports.spec = {
     return bidRequests.map((function (bidRequest) {
       bidRequest.startTime = new Date().getTime();
 
-      if (bidRequest.mediaType === 'video') {
+      if (spec.hasVideoMediaType(bidRequest)) {
         var params = bidRequest.params;
         var size = parseSizes(bidRequest);
+        var page_rf = !params.referrer ? utils.getTopWindowUrl() : params.referrer;
 
         var _data = {
-          page_url: !params.referrer ? utils.getTopWindowUrl() : params.referrer,
+          page_url: params.secure ? page_rf.replace(/^http:/i, 'https:') : page_rf,
           resolution: _getScreenResolution(),
           account_id: params.accountId,
           integration: INTEGRATION,
@@ -158,7 +171,7 @@ var spec = exports.spec = {
         var slotData = {
           site_id: params.siteId,
           zone_id: params.zoneId,
-          position: params.position || 'btf',
+          position: params.position === 'atf' || params.position === 'btf' ? params.position : 'unknown',
           floor: parseFloat(params.floor) > 0.01 ? params.floor : 0.01,
           element_id: bidRequest.adUnitCode,
           name: bidRequest.adUnitCode,
@@ -243,6 +256,15 @@ var spec = exports.spec = {
     }));
   },
   /**
+   * Test if bid has mediaType or mediaTypes set for video.
+   * note: 'mediaType' has been deprecated, however support will remain for a transitional period
+   * @param {BidRequest} bidRequest
+   * @returns {boolean}
+   */
+  hasVideoMediaType: function hasVideoMediaType(bidRequest) {
+    return bidRequest.mediaType === _mediaTypes.VIDEO || typeof utils.deepAccess(bidRequest, 'mediaTypes.' + _mediaTypes.VIDEO) !== 'undefined';
+  },
+  /**
    * @param {*} responseObj
    * @param {BidRequest} bidRequest
    * @return {Bid[]} An array of bids which
@@ -259,7 +281,7 @@ var spec = exports.spec = {
     }
 
     // video ads array is wrapped in an object
-    if ((typeof bidRequest === 'undefined' ? 'undefined' : _typeof(bidRequest)) === 'object' && bidRequest.mediaType === 'video' && (typeof ads === 'undefined' ? 'undefined' : _typeof(ads)) === 'object') {
+    if ((typeof bidRequest === 'undefined' ? 'undefined' : _typeof(bidRequest)) === 'object' && spec.hasVideoMediaType(bidRequest) && (typeof ads === 'undefined' ? 'undefined' : _typeof(ads)) === 'object') {
       ads = ads[bidRequest.adUnitCode];
     }
 
@@ -285,12 +307,17 @@ var spec = exports.spec = {
         ttl: 300, // 5 minutes
         netRevenue: _config.config.getConfig('rubicon.netRevenue') || false
       };
-      if (bidRequest.mediaType === 'video') {
+
+      if (ad.creative_type) {
+        bid.mediaType = ad.creative_type;
+      }
+
+      if (ad.creative_type === _mediaTypes.VIDEO) {
         bid.width = bidRequest.params.video.playerWidth;
         bid.height = bidRequest.params.video.playerHeight;
         bid.vastUrl = ad.creative_depot_url;
-        bid.descriptionUrl = ad.impression_id;
         bid.impression_id = ad.impression_id;
+        bid.videoCacheKey = ad.impression_id;
       } else {
         bid.ad = _renderCreative(ad.script, ad.impression_id);
 
@@ -353,9 +380,9 @@ function _renderCreative(script, impId) {
 
 function parseSizes(bid) {
   var params = bid.params;
-  if (bid.mediaType === 'video') {
+  if (spec.hasVideoMediaType(bid)) {
     var size = [];
-    if (params.video.playerWidth && params.video.playerHeight) {
+    if (_typeof(params.video) === 'object' && params.video.playerWidth && params.video.playerHeight) {
       size = [params.video.playerWidth, params.video.playerHeight];
     } else if (Array.isArray(bid.sizes) && bid.sizes.length > 0 && Array.isArray(bid.sizes[0]) && bid.sizes[0].length > 1) {
       size = bid.sizes[0];
@@ -407,4 +434,4 @@ function resetUserSync() {
 
 /***/ })
 
-},[226]);
+},[312]);

@@ -1,35 +1,59 @@
-pbjsChunk([53],{
+pbjsChunk([13],{
 
-/***/ 230:
+/***/ 316:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(231);
+__webpack_require__(317);
+module.exports = __webpack_require__(318);
 
 
 /***/ }),
 
-/***/ 231:
+/***/ 317:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.spec = undefined;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _utils = __webpack_require__(0);
 
-var _config = __webpack_require__(8);
+var utils = _interopRequireWildcard(_utils);
 
-var CONSTANTS = __webpack_require__(4);
-var utils = __webpack_require__(0);
-var bidfactory = __webpack_require__(3);
-var bidmanager = __webpack_require__(2);
-var adloader = __webpack_require__(5);
-var adaptermanager = __webpack_require__(1);
+var _bidderFactory = __webpack_require__(6);
 
-function SekindoUMAdapter() {
-  function _callBids(params) {
-    var bids = params.bids;
-    var bidsCount = bids.length;
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
+var spec = exports.spec = {
+  code: 'sekindoUM',
+  supportedMediaTypes: ['video'],
+  /**
+   * Determines whether or not the given bid request is valid.
+   *
+   * @param {BidRequest} bid The bid params to validate.
+   * @return boolean True if this is a valid bid, and false otherwise.
+   */
+  isBidRequestValid: function isBidRequestValid(bid) {
+    if (bid.mediaType == 'video' || _typeof(bid.mediaTypes) == 'object' && _typeof(bid.mediaTypes.video) == 'object') {
+      if (_typeof(bid.params.video) != 'object' || typeof bid.params.video.playerWidth == 'undefined' || typeof bid.params.video.playerHeight == 'undefined') {
+        return false;
+      }
+    }
+    return !!bid.params.spaceId;
+  },
+  /**
+   * Make a server request from the list of BidRequests.
+   *
+   * @param {validBidRequests[]} - an array of bids
+   * @return ServerRequest Info describing the request to the server.
+   */
+  buildRequests: function buildRequests(validBidRequests, bidderRequest) {
     var pubUrl = null;
     if (parent !== window) {
       pubUrl = document.referrer;
@@ -37,80 +61,96 @@ function SekindoUMAdapter() {
       pubUrl = window.location.href;
     }
 
-    for (var i = 0; i < bidsCount; i++) {
-      var bidReqeust = bids[i];
-      var callbackId = bidReqeust.bidId;
-      _requestBids(bidReqeust, callbackId, pubUrl);
-      // store a reference to the bidRequest from the callback id
-      // bidmanager.pbCallbackMap[callbackId] = bidReqeust;
-    }
-  }
+    return validBidRequests.map((function (bidRequest) {
+      var subId = utils.getBidIdParameter('subId', bidRequest.params);
+      var spaceId = utils.getBidIdParameter('spaceId', bidRequest.params);
+      var bidfloor = utils.getBidIdParameter('bidfloor', bidRequest.params);
+      var protocol = document.location.protocol === 'https:' ? 's' : '';
+      var queryString = '';
 
-  pbjs.sekindoCB = function (callbackId, response) {
-    var bidObj = (0, _utils.getBidRequest)(callbackId);
-    if (typeof response !== 'undefined' && typeof response.cpm !== 'undefined') {
-      var bid = [];
-      if (bidObj) {
-        var bidCode = bidObj.bidder;
-        var placementCode = bidObj.placementCode;
-
-        if (response.cpm !== undefined && response.cpm > 0) {
-          bid = bidfactory.createBid(CONSTANTS.STATUS.GOOD);
-          bid.callback_uid = callbackId;
-          bid.bidderCode = bidCode;
-          bid.creative_id = response.adId;
-          bid.cpm = parseFloat(response.cpm);
-          bid.ad = response.ad;
-          bid.width = response.width;
-          bid.height = response.height;
-
-          bidmanager.addBidResponse(placementCode, bid);
-        } else {
-          bid = bidfactory.createBid(CONSTANTS.STATUS.NO_BID);
-          bid.callback_uid = callbackId;
-          bid.bidderCode = bidCode;
-          bidmanager.addBidResponse(placementCode, bid);
+      queryString = utils.tryAppendQueryString(queryString, 's', spaceId);
+      queryString = utils.tryAppendQueryString(queryString, 'subId', subId);
+      queryString = utils.tryAppendQueryString(queryString, 'pubUrl', pubUrl);
+      queryString = utils.tryAppendQueryString(queryString, 'hbTId', bidRequest.transactionId);
+      queryString = utils.tryAppendQueryString(queryString, 'hbBidId', bidRequest.bidId);
+      queryString = utils.tryAppendQueryString(queryString, 'hbver', '4');
+      queryString = utils.tryAppendQueryString(queryString, 'hbcb', '1'); /// legasy
+      queryString = utils.tryAppendQueryString(queryString, 'dcpmflr', bidfloor);
+      queryString = utils.tryAppendQueryString(queryString, 'protocol', protocol);
+      if (bidRequest.mediaType === 'video' || _typeof(bidRequest.mediaTypes) == 'object' && _typeof(bidRequest.mediaTypes.video) == 'object') {
+        queryString = utils.tryAppendQueryString(queryString, 'x', bidRequest.params.playerWidth);
+        queryString = utils.tryAppendQueryString(queryString, 'y', bidRequest.params.playerHeight);
+        if (typeof vid_vastType != 'undefined') {
+          queryString = utils.tryAppendQueryString(queryString, 'vid_vastType', bidRequest.params.vid_vastType);
+        }
+        if (_typeof(bidRequest.mediaTypes) == 'object' && _typeof(bidRequest.mediaTypes.video) == 'object' && typeof bidRequest.mediaTypes.video.context == 'string') {
+          queryString = utils.tryAppendQueryString(queryString, 'vid_context', bidRequest.mediaTypes.video.context);
         }
       }
-    } else {
-      if (bidObj) {
-        utils.logMessage('No prebid response for placement ' + bidObj.placementCode);
-      } else {
-        utils.logMessage('sekindoUM callback general error');
-      }
+
+      var endpointUrl = 'http' + protocol + '://hb.sekindo.com/live/liveView.php';
+
+      return {
+        method: 'GET',
+        url: endpointUrl,
+        data: queryString
+      };
+    }));
+  },
+  /**
+   * Unpack the response from the server into a list of bids.
+   *
+   * @param {*} serverResponse A successful response from the server.
+   * @return {Bid[]} An array of bids which were nested inside the server.
+   */
+  interpretResponse: function interpretResponse(serverResponse, bidRequest) {
+    if ((typeof serverResponse === 'undefined' ? 'undefined' : _typeof(serverResponse)) !== 'object') {
+      return [];
     }
-  };
 
-  function _requestBids(bid, callbackId, pubUrl) {
-    // determine tag params
-    var spaceId = utils.getBidIdParameter('spaceId', bid.params);
-    var subId = utils.getBidIdParameter('subId', bid.params);
-    var bidfloor = utils.getBidIdParameter('bidfloor', bid.params);
-    var protocol = document.location.protocol === 'https:' ? 's' : '';
-    var scriptSrc = 'http' + protocol + '://hb.sekindo.com/live/liveView.php?';
+    var bidResponses = [];
+    var bidResponse = {
+      requestId: serverResponse.body.id,
+      bidderCode: spec.code,
+      cpm: serverResponse.body.cpm,
+      width: serverResponse.body.width,
+      height: serverResponse.body.height,
+      creativeId: serverResponse.body.creativeId,
+      currency: serverResponse.body.currency,
+      netRevenue: serverResponse.body.netRevenue,
+      ttl: serverResponse.body.ttl
+    };
+    if (bidRequest.mediaType == 'video') {
+      if (typeof serverResponse.body.vastUrl != 'undefined') {
+        bidResponse.vastUrl = serverResponse.body.vastUrl;
+      } else {
+        bidResponse.vastXml = serverResponse.body.vastXml;
+      }
+    } else {
+      bidResponse.ad = serverResponse.body.ad;
+    }
 
-    scriptSrc = utils.tryAppendQueryString(scriptSrc, 's', spaceId);
-    scriptSrc = utils.tryAppendQueryString(scriptSrc, 'subId', subId);
-    scriptSrc = utils.tryAppendQueryString(scriptSrc, 'pubUrl', pubUrl);
-    scriptSrc = utils.tryAppendQueryString(scriptSrc, 'hbcb', callbackId);
-    scriptSrc = utils.tryAppendQueryString(scriptSrc, 'hbver', '3');
-    scriptSrc = utils.tryAppendQueryString(scriptSrc, 'hbobj', 'pbjs');
-    scriptSrc = utils.tryAppendQueryString(scriptSrc, 'dcpmflr', bidfloor);
-    scriptSrc = utils.tryAppendQueryString(scriptSrc, 'hbto', _config.config.getConfig('bidderTimeout'));
-    scriptSrc = utils.tryAppendQueryString(scriptSrc, 'protocol', protocol);
-
-    adloader.loadScript(scriptSrc);
+    bidResponses.push(bidResponse);
+    return bidResponses;
+  },
+  getUserSyncs: function getUserSyncs(syncOptions) {
+    if (syncOptions.iframeEnabled) {
+      return [{
+        type: 'iframe',
+        url: 'ADAPTER_SYNC_URL'
+      }];
+    }
   }
+};
+(0, _bidderFactory.registerBidder)(spec);
 
-  return {
-    callBids: _callBids
-  };
-}
+/***/ }),
 
-adaptermanager.registerBidAdapter(new SekindoUMAdapter(), 'sekindoUM');
+/***/ 318:
+/***/ (function(module, exports) {
 
-module.exports = SekindoUMAdapter;
+
 
 /***/ })
 
-},[230]);
+},[316]);

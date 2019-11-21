@@ -1,14 +1,14 @@
-pbjsChunk([16],{
+pbjsChunk([43],{
 
-/***/ 121:
+/***/ 176:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(122);
+module.exports = __webpack_require__(177);
 
 
 /***/ }),
 
-/***/ 122:
+/***/ 177:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24,11 +24,11 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 exports['default'] = buildDfpVideoUrl;
 
-var _adServerManager = __webpack_require__(123);
+var _adServerManager = __webpack_require__(178);
 
-var _targeting = __webpack_require__(21);
+var _targeting = __webpack_require__(28);
 
-var _url = __webpack_require__(12);
+var _url = __webpack_require__(13);
 
 var _utils = __webpack_require__(0);
 
@@ -111,7 +111,9 @@ function buildDfpVideoUrl(options) {
 
   var adserverTargeting = bid && bid.adserverTargeting || {};
 
-  var customParams = _extends({}, adserverTargeting, { hb_uuid: bid && bid.videoCacheKey }, options.params.cust_params);
+  var customParams = _extends({}, adserverTargeting, { hb_uuid: bid && bid.videoCacheKey },
+  // hb_uuid should be deprecated and replaced by hb_cache_id
+  { hb_cache_id: bid && bid.videoCacheKey }, options.params.cust_params);
 
   var queryParams = _extends({}, defaultParamConstants, urlComponents.search, derivedParams, options.params, { cust_params: encodeURIComponent((0, _url.formatQS)(customParams)) });
 
@@ -177,7 +179,7 @@ function getDescriptionUrl(bid, components, prop) {
 
 /***/ }),
 
-/***/ 123:
+/***/ 178:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -188,7 +190,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.registerVideoSupport = registerVideoSupport;
 
-var _prebidGlobal = __webpack_require__(31);
+var _prebidGlobal = __webpack_require__(46);
 
 var _utils = __webpack_require__(0);
 
@@ -246,4 +248,4 @@ function registerVideoSupport(name, videoSupport) {
 
 /***/ })
 
-},[121]);
+},[176]);

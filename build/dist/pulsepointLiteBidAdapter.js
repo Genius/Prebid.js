@@ -1,15 +1,15 @@
-pbjsChunk([4],{
+pbjsChunk([19],{
 
-/***/ 212:
+/***/ 291:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(213);
-module.exports = __webpack_require__(214);
+__webpack_require__(292);
+module.exports = __webpack_require__(293);
 
 
 /***/ }),
 
-/***/ 213:
+/***/ 292:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22,7 +22,7 @@ exports.spec = undefined;
 
 var _utils = __webpack_require__(0);
 
-var _bidderFactory = __webpack_require__(9);
+var _bidderFactory = __webpack_require__(6);
 
 /* eslint dot-notation:0, quote-props:0 */
 var NATIVE_DEFAULTS = {
@@ -32,6 +32,10 @@ var NATIVE_DEFAULTS = {
   IMG_MIN: 150,
   ICON_MIN: 50
 };
+
+var DEFAULT_BID_TTL = 20;
+var DEFAULT_CURRENCY = 'USD';
+var DEFAULT_NET_REVENUE = true;
 
 /**
  * PulsePoint "Lite" Adapter.  This adapter implementation is lighter than the
@@ -115,7 +119,10 @@ function bidResponseAvailable(bidRequest, bidResponse) {
         cpm: idToBidMap[id].price,
         creative_id: id,
         creativeId: id,
-        adId: id
+        adId: id,
+        ttl: DEFAULT_BID_TTL,
+        netRevenue: DEFAULT_NET_REVENUE,
+        currency: DEFAULT_CURRENCY
       };
       if (idToImpMap[id]['native']) {
         bid['native'] = nativeResponse(idToImpMap[id], idToBidMap[id]);
@@ -125,10 +132,19 @@ function bidResponseAvailable(bidRequest, bidResponse) {
         bid.width = idToImpMap[id].banner.w;
         bid.height = idToImpMap[id].banner.h;
       }
+      applyExt(bid, idToBidMap[id]);
       bids.push(bid);
     }
   }));
   return bids;
+}
+
+function applyExt(bid, ortbBid) {
+  if (ortbBid && ortbBid.ext) {
+    bid.ttl = ortbBid.ext.ttl || bid.ttl;
+    bid.currency = ortbBid.ext.currency || bid.currency;
+    bid.netRevenue = ortbBid.ext.netRevenue != null ? ortbBid.ext.netRevenue : bid.netRevenue;
+  }
 }
 
 /**
@@ -342,11 +358,11 @@ function nativeResponse(imp, bid) {
 
 /***/ }),
 
-/***/ 214:
+/***/ 293:
 /***/ (function(module, exports) {
 
 
 
 /***/ })
 
-},[212]);
+},[291]);

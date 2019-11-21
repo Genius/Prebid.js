@@ -1,20 +1,20 @@
-pbjsChunk([90],{
+pbjsChunk([108],{
 
-/***/ 115:
+/***/ 170:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(116);
+module.exports = __webpack_require__(171);
 
 
 /***/ }),
 
-/***/ 116:
+/***/ 171:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adLoader = __webpack_require__(5);
 var adaptermanager = __webpack_require__(1);
@@ -275,4 +275,4 @@ module.exports = CoxAdapter;
 
 /***/ })
 
-},[115]);
+},[170]);

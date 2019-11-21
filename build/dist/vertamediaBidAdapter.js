@@ -1,161 +1,202 @@
-pbjsChunk([34],{
+pbjsChunk([3],{
 
-/***/ 273:
+/***/ 379:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(274);
+__webpack_require__(380);
+module.exports = __webpack_require__(381);
 
 
 /***/ }),
 
-/***/ 274:
+/***/ 380:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.spec = undefined;
+
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _adapter = __webpack_require__(7);
-
-var _adapter2 = _interopRequireDefault(_adapter);
-
-var _bidfactory = __webpack_require__(3);
-
-var _bidfactory2 = _interopRequireDefault(_bidfactory);
-
-var _bidmanager = __webpack_require__(2);
-
-var _bidmanager2 = _interopRequireDefault(_bidmanager);
 
 var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _ajax = __webpack_require__(6);
+var _bidderFactory = __webpack_require__(6);
 
-var _constants = __webpack_require__(4);
+var _mediaTypes = __webpack_require__(12);
 
-var _adaptermanager = __webpack_require__(1);
-
-var _adaptermanager2 = _interopRequireDefault(_adaptermanager);
+var _Renderer = __webpack_require__(18);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+var URL = '//rtb.vertamedia.com/hb/';
+var BIDDER_CODE = 'vertamedia';
 
-var ENDPOINT = '//rtb.vertamedia.com/hb/';
+var spec = exports.spec = {
+  code: BIDDER_CODE,
+  supportedMediaTypes: [_mediaTypes.VIDEO],
+  isBidRequestValid: function isBidRequestValid(bid) {
+    return Boolean(bid && bid.params && bid.params.aid);
+  },
 
-function VertamediaAdapter() {
-  var baseAdapter = new _adapter2['default']('vertamedia');
-  var bidRequest = void 0;
+  /**
+   * Make a server request from the list of BidRequests
+   * @param bidRequests
+   * @param bidderRequest
+   */
+  buildRequests: function buildRequests(bidRequests, bidderRequest) {
+    return bidRequests.map((function (bid) {
+      return {
+        data: prepareRTBRequestParams(bid),
+        bidderRequest: bidderRequest,
+        method: 'GET',
+        url: URL
+      };
+    }));
+  },
 
-  baseAdapter.callBids = function (bidRequests) {
-    if (!bidRequests || !bidRequests.bids || bidRequests.bids.length === 0) {
-      return;
+  /**
+   * Unpack the response from the server into a list of bids
+   * @param serverResponse
+   * @param bidderRequest
+   * @return {Bid[]} An array of bids which were nested inside the server
+   */
+  interpretResponse: function interpretResponse(serverResponse, _ref) {
+    var bidderRequest = _ref.bidderRequest;
+
+    serverResponse = serverResponse.body;
+    var isInvalidValidResp = !serverResponse || !serverResponse.bids || !serverResponse.bids.length;
+    var videoMediaType = utils.deepAccess(bidderRequest.bids[0], 'mediaTypes.video');
+    var context = utils.deepAccess(bidderRequest.bids[0], 'mediaTypes.video.context');
+    var isMediaTypeOutstream = videoMediaType && context === 'outstream';
+
+    var bids = [];
+
+    if (isInvalidValidResp) {
+      var extMessage = serverResponse && serverResponse.ext && serverResponse.ext.message ? ': ' + serverResponse.ext.message : '';
+      var errorMessage = 'in response for ' + bidderRequest.bidderCode + ' adapter ' + extMessage;
+
+      utils.logError(errorMessage);
+
+      return bids;
     }
 
-    var RTBDataParams = prepareAndSaveRTBRequestParams(bidRequests.bids[0]);
+    serverResponse.bids.forEach((function (serverBid) {
+      if (serverBid.cpm !== 0) {
+        var bid = createBid(isMediaTypeOutstream, serverBid);
+        bids.push(bid);
+      }
+    }));
 
-    if (!RTBDataParams) {
-      return;
-    }
+    return bids;
+  }
+};
 
-    (0, _ajax.ajax)(ENDPOINT, handleResponse, RTBDataParams, {
-      contentType: 'text/plain',
-      withCredentials: true,
-      method: 'GET'
-    });
+/**
+ * Prepare all parameters for request
+ * @param bid {object}
+ * @returns {object}
+ */
+function prepareRTBRequestParams(bid) {
+  var size = getSize(bid.sizes);
+
+  return {
+    domain: utils.getTopWindowLocation().hostname,
+    callbackId: bid.bidId,
+    aid: bid.params.aid,
+    h: size.height,
+    w: size.width
   };
-
-  function prepareAndSaveRTBRequestParams(bid) {
-    if (!bid || !bid.params || !bid.params.aid || !bid.placementCode) {
-      return;
-    }
-
-    bidRequest = bid;
-
-    var size = getSize(bid.sizes);
-
-    bidRequest.width = size.width;
-    bidRequest.height = size.height;
-
-    return {
-      aid: bid.params.aid,
-      w: size.width,
-      h: size.height,
-      domain: document.location.hostname
-    };
-  }
-
-  function getSize(requestSizes) {
-    var parsed = {};
-    var size = utils.parseSizesInput(requestSizes)[0];
-
-    if (typeof size !== 'string') {
-      return parsed;
-    }
-
-    var parsedSize = size.toUpperCase().split('X');
-
-    return {
-      width: parseInt(parsedSize[0], 10) || undefined,
-      height: parseInt(parsedSize[1], 10) || undefined
-    };
-  }
-
-  /* Notify Prebid of bid responses so bids can get in the auction */
-  function handleResponse(response) {
-    var parsed;
-
-    try {
-      parsed = JSON.parse(response);
-    } catch (error) {
-      utils.logError(error);
-    }
-
-    if (!parsed || parsed.error || !parsed.bids || !parsed.bids.length) {
-      _bidmanager2['default'].addBidResponse(bidRequest.placementCode, createBid(_constants.STATUS.NO_BID));
-
-      return;
-    }
-
-    _bidmanager2['default'].addBidResponse(bidRequest.placementCode, createBid(_constants.STATUS.GOOD, parsed.bids[0]));
-  }
-
-  function createBid(status, tag) {
-    var bid = _bidfactory2['default'].createBid(status, tag);
-
-    bid.code = baseAdapter.getBidderCode();
-    bid.bidderCode = bidRequest.bidder;
-
-    if (!tag || status !== _constants.STATUS.GOOD) {
-      return bid;
-    }
-
-    bid.mediaType = 'video';
-    bid.cpm = tag.cpm;
-    bid.creative_id = tag.cmpId;
-    bid.width = bidRequest.width;
-    bid.height = bidRequest.height;
-    bid.descriptionUrl = tag.url;
-    bid.vastUrl = tag.url;
-
-    return bid;
-  }
-
-  return _extends(this, {
-    callBids: baseAdapter.callBids,
-    setBidderCode: baseAdapter.setBidderCode
-  });
 }
 
-_adaptermanager2['default'].registerBidAdapter(new VertamediaAdapter(), 'vertamedia', {
-  supportedMediaTypes: ['video']
-});
+/**
+ * Prepare size for request
+ * @param requestSizes {array}
+ * @returns {object} bid The bid to validate
+ */
+function getSize(requestSizes) {
+  var size = utils.parseSizesInput(requestSizes)[0];
+  var parsed = {};
 
-module.exports = VertamediaAdapter;
+  if (typeof size !== 'string') {
+    return parsed;
+  }
+
+  var parsedSize = size.toUpperCase().split('X');
+
+  return {
+    height: parseInt(parsedSize[1], 10) || undefined,
+    width: parseInt(parsedSize[0], 10) || undefined
+  };
+}
+
+/**
+ * Configure new bid by response
+ * @param isMediaTypeOutstream {boolean}
+ * @param bidResponse {object}
+ * @returns {object}
+ */
+function createBid(isMediaTypeOutstream, bidResponse) {
+  var bid = {
+    requestId: bidResponse.requestId,
+    creativeId: bidResponse.cmpId,
+    vastUrl: bidResponse.vastUrl,
+    height: bidResponse.height,
+    currency: bidResponse.cur,
+    width: bidResponse.width,
+    cpm: bidResponse.cpm,
+    mediaType: 'video',
+    netRevenue: true,
+    ttl: 3600
+  };
+
+  if (isMediaTypeOutstream) {
+    _extends(bid, {
+      adResponse: bidResponse,
+      renderer: newRenderer(bidResponse.requestId)
+    });
+  }
+
+  return bid;
+}
+
+function newRenderer(requestId) {
+  var renderer = _Renderer.Renderer.install({
+    id: requestId,
+    url: '//player.vertamedia.com/outstream-unit/2.01/outstream.min.js',
+    loaded: false
+  });
+
+  renderer.setRender(outstreamRender);
+
+  return renderer;
+}
+
+function outstreamRender(bid) {
+  bid.renderer.push((function () {
+    window.VOutstreamAPI.initOutstreams([{
+      width: bid.width,
+      height: bid.height,
+      vastUrl: bid.vastUrl,
+      elId: bid.adUnitCode
+    }]);
+  }));
+}
+
+(0, _bidderFactory.registerBidder)(spec);
+
+/***/ }),
+
+/***/ 381:
+/***/ (function(module, exports) {
+
+
 
 /***/ })
 
-},[273]);
+},[379]);

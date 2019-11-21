@@ -1,15 +1,15 @@
-pbjsChunk([14],{
+pbjsChunk([40],{
 
-/***/ 137:
+/***/ 195:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(138);
-module.exports = __webpack_require__(139);
+__webpack_require__(196);
+module.exports = __webpack_require__(197);
 
 
 /***/ }),
 
-/***/ 138:
+/***/ 196:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20,7 +20,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.spec = undefined;
 
-var _bidderFactory = __webpack_require__(9);
+var _bidderFactory = __webpack_require__(6);
 
 var BIDDER_CODE = 'getintent';
 var IS_NET_REVENUE = true;
@@ -162,11 +162,11 @@ function produceSize(sizes) {
 
 /***/ }),
 
-/***/ 139:
+/***/ 197:
 /***/ (function(module, exports) {
 
 
 
 /***/ })
 
-},[137]);
+},[195]);

@@ -1,14 +1,14 @@
-pbjsChunk([63],{
+pbjsChunk([86],{
 
-/***/ 192:
+/***/ 270:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(193);
+module.exports = __webpack_require__(271);
 
 
 /***/ }),
 
-/***/ 193:
+/***/ 271:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16,12 +16,12 @@ module.exports = __webpack_require__(193);
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 var utils = __webpack_require__(0);
 var bidmanager = __webpack_require__(2);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var adloader = __webpack_require__(5);
-var Adapter = __webpack_require__(7)['default'];
+var Adapter = __webpack_require__(9)['default'];
 var adaptermanager = __webpack_require__(1);
 
 var PiximediaAdapter = function PiximediaAdapter() {
@@ -170,4 +170,4 @@ module.exports = PiximediaAdapter;
 
 /***/ })
 
-},[192]);
+},[270]);

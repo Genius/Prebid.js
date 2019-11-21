@@ -1,24 +1,24 @@
-pbjsChunk([97],{
+pbjsChunk([115],{
 
-/***/ 92:
+/***/ 144:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(93);
+module.exports = __webpack_require__(145);
 
 
 /***/ }),
 
-/***/ 93:
+/***/ 145:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var CONSTANTS = __webpack_require__(4);
-var bidfactory = __webpack_require__(3);
+var CONSTANTS = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
-var Ajax = __webpack_require__(6);
+var Ajax = __webpack_require__(7);
 var utils = __webpack_require__(0);
 var adaptermanager = __webpack_require__(1);
 
@@ -100,4 +100,4 @@ module.exports = AtomxAdapter;
 
 /***/ })
 
-},[92]);
+},[144]);

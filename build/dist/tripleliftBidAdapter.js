@@ -1,14 +1,14 @@
-pbjsChunk([39],{
+pbjsChunk([69],{
 
-/***/ 260:
+/***/ 362:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(261);
+module.exports = __webpack_require__(363);
 
 
 /***/ }),
 
-/***/ 261:
+/***/ 363:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17,7 +17,7 @@ module.exports = __webpack_require__(261);
 var utils = __webpack_require__(0);
 var adloader = __webpack_require__(5);
 var bidmanager = __webpack_require__(2);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var adaptermanager = __webpack_require__(1);
 
 /* TripleLift bidder factory function
@@ -54,7 +54,7 @@ var TripleLiftAdapter = function TripleLiftAdapter() {
 
     tlCall = utils.tryAppendQueryString(tlCall, 'callback', 'pbjs.TLCB');
     tlCall = utils.tryAppendQueryString(tlCall, 'lib', 'prebid');
-    tlCall = utils.tryAppendQueryString(tlCall, 'v', '0.32.0');
+    tlCall = utils.tryAppendQueryString(tlCall, 'v', '0.34.9');
     tlCall = utils.tryAppendQueryString(tlCall, 'callback_id', callbackId);
     tlCall = utils.tryAppendQueryString(tlCall, 'inv_code', inventoryCode);
     tlCall = utils.tryAppendQueryString(tlCall, 'floor', floor);
@@ -170,4 +170,4 @@ module.exports = TripleLiftAdapter;
 
 /***/ })
 
-},[260]);
+},[362]);

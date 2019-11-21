@@ -1,20 +1,20 @@
-pbjsChunk([48],{
+pbjsChunk([76],{
 
-/***/ 242:
+/***/ 342:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(243);
+module.exports = __webpack_require__(343);
 
 
 /***/ }),
 
-/***/ 243:
+/***/ 343:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
 var utils = __webpack_require__(0);
@@ -29,7 +29,14 @@ var SonobiAdapter = function SonobiAdapter() {
     var adSlots = request.bids || [];
     var bidderRequestId = request.bidderRequestId;
     var ref = '&ref=' + encodeURI(utils.getTopWindowLocation().host);
-    adloader.loadScript(trinity + JSON.stringify(_keymaker(adSlots)) + '&cv=' + _operator(bidderRequestId) + ref);
+    var libName = '&lib_name=prebid';
+    var libVersion = '&lib_v=0.34.9';
+    var vp = '&vp=' + _getPlatform();
+    var key_maker = _keymaker(adSlots);
+    if (utils.isEmpty(key_maker)) {
+      return null;
+    }
+    return adloader.loadScript(trinity + JSON.stringify(key_maker) + '&cv=' + _operator(bidderRequestId) + ref + vp + libVersion + libName);
   }
 
   function _keymaker(adSlots) {
@@ -120,12 +127,52 @@ var SonobiAdapter = function SonobiAdapter() {
     return '<script type="text/javascript" src="' + src + '"></script>';
   }
 
+  /**
+   * @param context - the window to determine the innerWidth from. This is purely for test purposes as it should always be the current window
+   */
+  function _isInBounds() {
+    var context = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window;
+
+    return function () {
+      var lowerBound = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+      var upperBound = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Number.MAX_SAFE_INTEGER;
+
+      return context.innerWidth >= lowerBound && context.innerWidth < upperBound;
+    };
+  }
+
+  /**
+   * @param context - the window to determine the innerWidth from. This is purely for test purposes as it should always be the current window
+   */
+  function _getPlatform() {
+    var context = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window;
+
+    var isInBounds = _isInBounds(context);
+    var MOBILE_VIEWPORT = {
+      lt: 768
+    };
+    var TABLET_VIEWPORT = {
+      lt: 992,
+      ge: 768
+    };
+    if (isInBounds(0, MOBILE_VIEWPORT.lt)) {
+      return 'mobile';
+    }
+    if (isInBounds(TABLET_VIEWPORT.ge, TABLET_VIEWPORT.lt)) {
+      return 'tablet';
+    }
+    return 'desktop';
+  }
+
   return {
     callBids: _phone_in,
     formRequest: _keymaker,
     parseResponse: _trinity,
     success: _success,
-    failure: _failure
+    failure: _failure,
+    // export helper functions for testing purposes
+    _isInBounds: _isInBounds,
+    _getPlatform: _getPlatform
   };
 };
 
@@ -135,4 +182,4 @@ module.exports = SonobiAdapter;
 
 /***/ })
 
-},[242]);
+},[342]);

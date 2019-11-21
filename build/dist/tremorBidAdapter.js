@@ -1,14 +1,14 @@
-pbjsChunk([41],{
+pbjsChunk([70],{
 
-/***/ 256:
+/***/ 357:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(257);
+module.exports = __webpack_require__(358);
 
 
 /***/ }),
 
-/***/ 257:
+/***/ 358:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20,11 +20,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                                                                                                                                                                                                                                                                               * Tremor Video bid Adapter for prebid.js
                                                                                                                                                                                                                                                                               * */
 
-var _adapter = __webpack_require__(7);
+var _adapter = __webpack_require__(9);
 
 var _adapter2 = _interopRequireDefault(_adapter);
 
-var _bidfactory = __webpack_require__(3);
+var _bidfactory = __webpack_require__(4);
 
 var _bidfactory2 = _interopRequireDefault(_bidfactory);
 
@@ -36,9 +36,9 @@ var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 var _adaptermanager = __webpack_require__(1);
 
@@ -203,4 +203,4 @@ module.exports = TremorAdapter;
 
 /***/ })
 
-},[256]);
+},[357]);

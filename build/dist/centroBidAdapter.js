@@ -1,21 +1,21 @@
-pbjsChunk([92],{
+pbjsChunk([110],{
 
-/***/ 108:
+/***/ 163:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(109);
+module.exports = __webpack_require__(164);
 
 
 /***/ }),
 
-/***/ 109:
+/***/ 164:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var utils = __webpack_require__(0);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var bidmanager = __webpack_require__(2);
 var adloader = __webpack_require__(5);
 var adaptermanager = __webpack_require__(1);
@@ -137,4 +137,4 @@ module.exports = CentroAdapter;
 
 /***/ })
 
-},[108]);
+},[163]);

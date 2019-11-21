@@ -1,14 +1,14 @@
-pbjsChunk([31],{
+pbjsChunk([63],{
 
-/***/ 279:
+/***/ 386:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(280);
+module.exports = __webpack_require__(387);
 
 
 /***/ }),
 
-/***/ 280:
+/***/ 387:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17,7 +17,7 @@ module.exports = __webpack_require__(280);
 var utils = __webpack_require__(0);
 var adloader = __webpack_require__(5);
 var bidmanager = __webpack_require__(2);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var adaptermanager = __webpack_require__(1);
 var WS_ADAPTER_VERSION = '1.0.3';
 
@@ -144,4 +144,4 @@ module.exports = WidespaceAdapter;
 
 /***/ })
 
-},[279]);
+},[386]);

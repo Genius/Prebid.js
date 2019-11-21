@@ -1,5 +1,5 @@
-/* prebid.js v0.32.0
-Updated : 2017-11-13 */
+/* prebid.js v0.34.9
+Updated : 2019-11-21 */
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// install a JSONP callback for chunk loading
 /******/ 	var parentJsonpFunction = window["pbjsChunk"];
@@ -36,7 +36,7 @@ Updated : 2017-11-13 */
 /******/
 /******/ 	// objects to store loaded and loading chunks
 /******/ 	var installedChunks = {
-/******/ 		110: 0
+/******/ 		127: 0
 /******/ 	};
 /******/
 /******/ 	// The require function
@@ -63,14 +63,6 @@ Updated : 2017-11-13 */
 /******/ 		return module.exports;
 /******/ 	}
 /******/
-/******/ 	// This file contains only the entry chunk.
-/******/ 	// The chunk loading function for additional chunks
-/******/ 	__webpack_require__.e = function requireEnsure(chunkId) {
-/******/ 		if(installedChunks[chunkId] === 0)
-/******/ 		  return callback.call(null, __webpack_require__);
-/******/ 		else
-/******/ 		  console.error('webpack chunk not found and jsonp disabled');
-/******/ 	};
 /******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
@@ -108,7 +100,7 @@ Updated : 2017-11-13 */
 /******/ 	__webpack_require__.oe = function(err) { console.error(err); throw err; };
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 287);
+/******/ 	return __webpack_require__(__webpack_require__.s = 394);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -139,7 +131,7 @@ exports.getHighestCpm = getHighestCpm;
 exports.shuffle = shuffle;
 exports.adUnitsFilter = adUnitsFilter;
 exports.isSrcdocSupported = isSrcdocSupported;
-exports.cloneJson = cloneJson;
+exports.deepClone = deepClone;
 exports.inIframe = inIframe;
 exports.isSafariBrowser = isSafariBrowser;
 exports.replaceAuctionPrice = replaceAuctionPrice;
@@ -149,14 +141,22 @@ exports.cookiesAreEnabled = cookiesAreEnabled;
 exports.delayExecution = delayExecution;
 exports.groupBy = groupBy;
 exports.deepAccess = deepAccess;
+exports.createContentToExecuteExtScriptInFriendlyFrame = createContentToExecuteExtScriptInFriendlyFrame;
 exports.getDefinedParams = getDefinedParams;
 exports.isValidMediaTypes = isValidMediaTypes;
+exports.unsupportedBidderMessage = unsupportedBidderMessage;
 
 var _config = __webpack_require__(8);
 
+var _justClone = __webpack_require__(60);
+
+var _justClone2 = _interopRequireDefault(_justClone);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 
 var _loggingChecked = false;
 
@@ -335,6 +335,14 @@ exports.getTopWindowUrl = function () {
   return href;
 };
 
+exports.getTopWindowReferrer = function () {
+  try {
+    return window.top.document.referrer;
+  } catch (e) {
+    return document.referrer;
+  }
+};
+
 exports.logWarn = function (msg) {
   if (debugTurnedOn() && console.warn) {
     console.warn('WARNING: ' + msg);
@@ -363,12 +371,11 @@ function hasConsoleLogger() {
   return window.console && window.console.log;
 }
 
-exports.hasConsoleLogger = hasConsoleLogger;
+function hasConsoleError() {
+  return window.console && window.console.error;
+}
 
-var errLogFn = (function (hasLogger) {
-  if (!hasLogger) return '';
-  return window.console.error ? 'error' : 'log';
-})(hasConsoleLogger());
+exports.hasConsoleLogger = hasConsoleLogger;
 
 var debugTurnedOn = function debugTurnedOn() {
   if (_config.config.getConfig('debug') === false && _loggingChecked === false) {
@@ -382,10 +389,12 @@ var debugTurnedOn = function debugTurnedOn() {
 
 exports.debugTurnedOn = debugTurnedOn;
 
-exports.logError = function (msg, code, exception) {
-  var errCode = code || 'ERROR';
-  if (debugTurnedOn() && hasConsoleLogger()) {
-    console[errLogFn](console, errCode + ': ' + msg, exception || '');
+/**
+ * Wrapper to console.error. Takes N arguments to log the same as console.error.
+ */
+exports.logError = function () {
+  if (debugTurnedOn() && hasConsoleError()) {
+    console.error.apply(console, arguments);
   }
 };
 
@@ -798,8 +807,8 @@ function isSrcdocSupported(doc) {
   return doc.defaultView && doc.defaultView.frameElement && 'srcdoc' in doc.defaultView.frameElement && !/firefox/i.test(navigator.userAgent);
 }
 
-function cloneJson(obj) {
-  return JSON.parse(JSON.stringify(obj));
+function deepClone(obj) {
+  return (0, _justClone2['default'])(obj);
 }
 
 function inIframe() {
@@ -899,6 +908,19 @@ function deepAccess(obj, path) {
 }
 
 /**
+ * Returns content for a friendly iframe to execute a URL in script tag
+ * @param {url} URL to be executed in a script tag in a friendly iframe
+ * <!--PRE_SCRIPT_TAG_MACRO--> and <!--POST_SCRIPT_TAG_MACRO--> are macros left to be replaced if required
+ */
+function createContentToExecuteExtScriptInFriendlyFrame(url) {
+  if (!url) {
+    return '';
+  }
+
+  return '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><html><head><base target="_top" /><script>inDapIF=true;</script></head><body><!--PRE_SCRIPT_TAG_MACRO--><script src="' + url + '"></script><!--POST_SCRIPT_TAG_MACRO--></body></html>';
+}
+
+/**
  * Build an object consisting of only defined parameters to avoid creating an
  * object with defined keys and undefined values.
  * @param {object} object The object to pick defined params out of
@@ -944,6 +966,19 @@ function isValidMediaTypes(mediaTypes) {
   return true;
 }
 
+/**
+ * Constructs warning message for when unsupported bidders are dropped from an adunit
+ * @param {Object} adUnit ad unit from which the bidder is being dropped
+ * @param {Array} unSupportedBidders arrary of bidder codes that are not compatible with the adUnit
+ * @return {string} warning message to display when condition is met
+ */
+function unsupportedBidderMessage(adUnit, unSupportedBidders) {
+  var mediaType = adUnit.mediaType || Object.keys(adUnit.mediaTypes).join(', ');
+  var plural = unSupportedBidders.length === 1 ? 'This bidder' : 'These bidders';
+
+  return '\n    ' + adUnit.code + ' is a ' + mediaType + ' ad unit\n    containing bidders that don\'t support ' + mediaType + ': ' + unSupportedBidders.join(', ') + '.\n    ' + plural + ' won\'t fetch demand.\n  ';
+}
+
 /***/ })),
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -955,14 +990,14 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _utils = __webpack_require__(0);
 
-var _sizeMapping = __webpack_require__(46);
+var _sizeMapping = __webpack_require__(61);
 
 var _native = __webpack_require__(15);
 
-var _bidderFactory = __webpack_require__(9);
+var _bidderFactory = __webpack_require__(6);
 
 var utils = __webpack_require__(0);
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 var events = __webpack_require__(11);
 var s2sTestingModule = void 0; // store s2sTesting module if it's loaded
 
@@ -1078,7 +1113,7 @@ exports.callBids = function (_ref2) {
     bidderCodes = bidderCodes.filter((function (elm) {
       return !adaptersServerSide.includes(elm) || clientTestAdapters.includes(elm);
     }));
-    var adUnitsS2SCopy = utils.cloneJson(adUnits);
+    var adUnitsS2SCopy = utils.deepClone(adUnits);
 
     // filter out client side bids
     adUnitsS2SCopy.forEach((function (adUnit) {
@@ -1116,6 +1151,7 @@ exports.callBids = function (_ref2) {
       };
       if (bidderRequest.bids.length !== 0) {
         pbjs._bidsRequested.push(bidderRequest);
+        events.emit(CONSTANTS.EVENTS.BID_REQUESTED, bidderRequest);
       }
     }));
 
@@ -1128,7 +1164,7 @@ exports.callBids = function (_ref2) {
 
   var _bidderRequests = [];
   // client side adapters
-  var adUnitsClientCopy = utils.cloneJson(adUnits);
+  var adUnitsClientCopy = utils.deepClone(adUnits);
   // filter out s2s bids
   adUnitsClientCopy.forEach((function (adUnit) {
     adUnit.bids = adUnit.bids.filter((function (bid) {
@@ -1153,6 +1189,7 @@ exports.callBids = function (_ref2) {
         auctionStart: auctionStart,
         timeout: cbTimeout
       };
+
       if (bidderRequest.bids && bidderRequest.bids.length !== 0) {
         pbjs._bidsRequested.push(bidderRequest);
         _bidderRequests.push(bidderRequest);
@@ -1317,21 +1354,21 @@ var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = 
 
 var _utils = __webpack_require__(0);
 
-var _cpmBucketManager = __webpack_require__(28);
+var _cpmBucketManager = __webpack_require__(35);
 
 var _native = __webpack_require__(15);
 
-var _video = __webpack_require__(29);
+var _video = __webpack_require__(36);
 
-var _videoCache = __webpack_require__(47);
+var _videoCache = __webpack_require__(62);
 
-var _Renderer = __webpack_require__(20);
+var _Renderer = __webpack_require__(18);
 
 var _config = __webpack_require__(8);
 
-var _hook = __webpack_require__(48);
+var _hook = __webpack_require__(63);
 
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 var AUCTION_END = CONSTANTS.EVENTS.AUCTION_END;
 var utils = __webpack_require__(0);
 var events = __webpack_require__(11);
@@ -1407,181 +1444,174 @@ exports.bidsBackAll = function () {
   return bidsBackAll();
 };
 
+// Validate the arguments sent to us by the adapter. If this returns false, the bid should be totally ignored.
+function isValidBid(bid, adUnitCode) {
+  function errorMessage(msg) {
+    return 'Invalid bid from ' + bid.bidderCode + '. Ignoring bid: ' + msg;
+  }
+
+  if (!bid) {
+    utils.logError('Some adapter tried to add an undefined bid for ' + adUnitCode + '.');
+    return false;
+  }
+  if (!adUnitCode) {
+    utils.logError(errorMessage('No adUnitCode was supplied to addBidResponse.'));
+    return false;
+  }
+
+  var bidRequest = (0, _utils.getBidderRequest)(bid.bidderCode, adUnitCode);
+  if (!bidRequest.start) {
+    utils.logError(errorMessage('Cannot find valid matching bid request.'));
+    return false;
+  }
+
+  if (bid.mediaType === 'native' && !(0, _native.nativeBidIsValid)(bid)) {
+    utils.logError(errorMessage('Native bid missing some required properties.'));
+    return false;
+  }
+  if (bid.mediaType === 'video' && !(0, _video.isValidVideoBid)(bid)) {
+    utils.logError(errorMessage('Video bid does not have required vastUrl or renderer property'));
+    return false;
+  }
+  if (bid.mediaType === 'banner' && !validBidSize(bid, adUnitCode)) {
+    utils.logError(errorMessage('Banner bids require a width and height'));
+    return false;
+  }
+
+  return true;
+}
+
+// check that the bid has a width and height set
+function validBidSize(bid, adUnitCode) {
+  if ((bid.width || bid.width === 0) && (bid.height || bid.height === 0)) {
+    return true;
+  }
+
+  var adUnit = (0, _utils.getBidderRequest)(bid.bidderCode, adUnitCode);
+  var sizes = adUnit && adUnit.bids && adUnit.bids[0] && adUnit.bids[0].sizes;
+  var parsedSizes = utils.parseSizesInput(sizes);
+
+  // if a banner impression has one valid size, we assign that size to any bid
+  // response that does not explicitly set width or height
+  if (parsedSizes.length === 1) {
+    var _parsedSizes$0$split = parsedSizes[0].split('x'),
+        _parsedSizes$0$split2 = _slicedToArray(_parsedSizes$0$split, 2),
+        width = _parsedSizes$0$split2[0],
+        height = _parsedSizes$0$split2[1];
+
+    bid.width = width;
+    bid.height = height;
+    return true;
+  }
+
+  return false;
+}
+
+// Postprocess the bids so that all the universal properties exist, no matter which bidder they came from.
+// This should be called before addBidToAuction().
+function prepareBidForAuction(bid, adUnitCode) {
+  var bidRequest = (0, _utils.getBidderRequest)(bid.bidderCode, adUnitCode);
+
+  _extends(bid, {
+    requestId: bidRequest.requestId,
+    responseTimestamp: timestamp(),
+    requestTimestamp: bidRequest.start,
+    cpm: parseFloat(bid.cpm) || 0,
+    bidder: bid.bidderCode,
+    adUnitCode: adUnitCode
+  });
+
+  bid.timeToRespond = bid.responseTimestamp - bid.requestTimestamp;
+
+  // Let listeners know that now is the time to adjust the bid, if they want to.
+  //
+  // CAREFUL: Publishers rely on certain bid properties to be available (like cpm),
+  // but others to not be set yet (like priceStrings). See #1372 and #1389.
+  events.emit(CONSTANTS.EVENTS.BID_ADJUSTMENT, bid);
+
+  // a publisher-defined renderer can be used to render bids
+  var adUnitRenderer = bidRequest.bids && bidRequest.bids[0] && bidRequest.bids[0].renderer;
+
+  if (adUnitRenderer) {
+    bid.renderer = _Renderer.Renderer.install({ url: adUnitRenderer.url });
+    bid.renderer.setRender(adUnitRenderer.render);
+  }
+
+  var priceStringsObj = (0, _cpmBucketManager.getPriceBucketString)(bid.cpm, _config.config.getConfig('customPriceBucket'), _config.config.getConfig('currency.granularityMultiplier'));
+  bid.pbLg = priceStringsObj.low;
+  bid.pbMg = priceStringsObj.med;
+  bid.pbHg = priceStringsObj.high;
+  bid.pbAg = priceStringsObj.auto;
+  bid.pbDg = priceStringsObj.dense;
+  bid.pbCg = priceStringsObj.custom;
+
+  // if there is any key value pairs to map do here
+  var keyValues;
+  if (bid.bidderCode && (bid.cpm > 0 || bid.dealId)) {
+    keyValues = getKeyValueTargetingPairs(bid.bidderCode, bid);
+  }
+
+  // use any targeting provided as defaults, otherwise just set from getKeyValueTargetingPairs
+  bid.adserverTargeting = _extends(bid.adserverTargeting || {}, keyValues);
+}
+
+function doCallbacksIfNeeded(bid) {
+  if (bid.timeToRespond > pbjs.cbTimeout + pbjs.timeoutBuffer) {
+    var timedOut = true;
+    exports.executeCallback(timedOut);
+  }
+}
+
+// Add a bid to the auction.
+function addBidToAuction(bid) {
+  events.emit(CONSTANTS.EVENTS.BID_RESPONSE, bid);
+
+  pbjs._bidsReceived.push(bid);
+
+  if (bid.adUnitCode && bidsBackAdUnit(bid.adUnitCode)) {
+    triggerAdUnitCallbacks(bid.adUnitCode);
+  }
+
+  if (bidsBackAll()) {
+    exports.executeCallback();
+  }
+}
+
+// Video bids may fail if the cache is down, or there's trouble on the network.
+function tryAddVideoBid(bid) {
+  if (_config.config.getConfig('usePrebidCache') && !bid.videoCacheKey) {
+    (0, _videoCache.store)([bid], (function (error, cacheIds) {
+      if (error) {
+        utils.logWarn('Failed to save to the video cache: ' + error + '. Video bid must be discarded.');
+      } else {
+        bid.videoCacheKey = cacheIds[0].uuid;
+        if (!bid.vastUrl) {
+          bid.vastUrl = (0, _videoCache.getCacheUrl)(bid.videoCacheKey);
+        }
+        addBidToAuction(bid);
+      }
+      doCallbacksIfNeeded(bid);
+    }));
+  } else {
+    addBidToAuction(bid);
+    doCallbacksIfNeeded(bid);
+  }
+}
+
 /*
  *   This function should be called to by the bidder adapter to register a bid response
  */
 exports.addBidResponse = (0, _hook.createHook)('asyncSeries', (function (adUnitCode, bid) {
-  if (isValid()) {
-    prepareBidForAuction();
-
-    if (bid.mediaType === 'video') {
-      tryAddVideoBid(bid);
-    } else {
-      addBidToAuction(bid);
-      doCallbacksIfNeeded();
-    }
+  if (!isValidBid(bid, adUnitCode)) {
+    return;
   }
+  prepareBidForAuction(bid, adUnitCode);
 
-  // Actual method logic is above. Everything below is helper functions.
-
-  // Validate the arguments sent to us by the adapter. If this returns false, the bid should be totally ignored.
-  function isValid() {
-    function errorMessage(msg) {
-      return 'Invalid bid from ' + bid.bidderCode + '. Ignoring bid: ' + msg;
-    }
-
-    if (!bid) {
-      utils.logError('Some adapter tried to add an undefined bid for ' + adUnitCode + '.');
-      return false;
-    }
-    if (!adUnitCode) {
-      utils.logError(errorMessage('No adUnitCode was supplied to addBidResponse.'));
-      return false;
-    }
-
-    var bidRequest = (0, _utils.getBidderRequest)(bid.bidderCode, adUnitCode);
-    if (!bidRequest.start) {
-      utils.logError(errorMessage('Cannot find valid matching bid request.'));
-      return false;
-    }
-
-    if (bid.mediaType === 'native' && !(0, _native.nativeBidIsValid)(bid)) {
-      utils.logError(errorMessage('Native bid missing some required properties.'));
-      return false;
-    }
-    if (bid.mediaType === 'video' && !(0, _video.isValidVideoBid)(bid)) {
-      utils.logError(errorMessage('Video bid does not have required vastUrl or renderer property'));
-      return false;
-    }
-    if (bid.mediaType === 'banner' && !validBidSize(bid)) {
-      utils.logError(errorMessage('Banner bids require a width and height'));
-      return false;
-    }
-
-    return true;
-  }
-
-  // check that the bid has a width and height set
-  function validBidSize(bid) {
-    if ((bid.width || bid.width === 0) && (bid.height || bid.height === 0)) {
-      return true;
-    }
-
-    var adUnit = (0, _utils.getBidderRequest)(bid.bidderCode, adUnitCode);
-    var sizes = adUnit && adUnit.bids && adUnit.bids[0] && adUnit.bids[0].sizes;
-    var parsedSizes = utils.parseSizesInput(sizes);
-
-    // if a banner impression has one valid size, we assign that size to any bid
-    // response that does not explicitly set width or height
-    if (parsedSizes.length === 1) {
-      var _parsedSizes$0$split = parsedSizes[0].split('x'),
-          _parsedSizes$0$split2 = _slicedToArray(_parsedSizes$0$split, 2),
-          width = _parsedSizes$0$split2[0],
-          height = _parsedSizes$0$split2[1];
-
-      bid.width = width;
-      bid.height = height;
-      return true;
-    }
-
-    return false;
-  }
-
-  // Postprocess the bids so that all the universal properties exist, no matter which bidder they came from.
-  // This should be called before addBidToAuction().
-  function prepareBidForAuction() {
-    var bidRequest = (0, _utils.getBidderRequest)(bid.bidderCode, adUnitCode);
-
-    _extends(bid, {
-      requestId: bidRequest.requestId,
-      responseTimestamp: timestamp(),
-      requestTimestamp: bidRequest.start,
-      cpm: parseFloat(bid.cpm) || 0,
-      bidder: bid.bidderCode,
-      adUnitCode: adUnitCode
-    });
-
-    var currentRequestId = getCurrentRequestId();
-    if (bidRequest.requestId !== currentRequestId) {
-      utils.logWarn('Got bid response for request ID ' + bidRequest.requestId + ', which does not match current request ID ' + currentRequestId + '. Response discarded.');
-      return;
-    }
-
-    bid.timeToRespond = bid.responseTimestamp - bid.requestTimestamp;
-
-    // Let listeners know that now is the time to adjust the bid, if they want to.
-    //
-    // CAREFUL: Publishers rely on certain bid properties to be available (like cpm),
-    // but others to not be set yet (like priceStrings). See #1372 and #1389.
-    events.emit(CONSTANTS.EVENTS.BID_ADJUSTMENT, bid);
-
-    // a publisher-defined renderer can be used to render bids
-    var adUnitRenderer = bidRequest.bids && bidRequest.bids[0] && bidRequest.bids[0].renderer;
-
-    if (adUnitRenderer) {
-      bid.renderer = _Renderer.Renderer.install({ url: adUnitRenderer.url });
-      bid.renderer.setRender(adUnitRenderer.render);
-    }
-
-    var priceStringsObj = (0, _cpmBucketManager.getPriceBucketString)(bid.cpm, _config.config.getConfig('customPriceBucket'), _config.config.getConfig('currency.granularityMultiplier'));
-    bid.pbLg = priceStringsObj.low;
-    bid.pbMg = priceStringsObj.med;
-    bid.pbHg = priceStringsObj.high;
-    bid.pbAg = priceStringsObj.auto;
-    bid.pbDg = priceStringsObj.dense;
-    bid.pbCg = priceStringsObj.custom;
-
-    // if there is any key value pairs to map do here
-    var keyValues;
-    if (bid.bidderCode && (bid.cpm > 0 || bid.dealId)) {
-      keyValues = getKeyValueTargetingPairs(bid.bidderCode, bid);
-    }
-
-    // use any targeting provided as defaults, otherwise just set from getKeyValueTargetingPairs
-    bid.adserverTargeting = _extends(bid.adserverTargeting || {}, keyValues);
-  }
-
-  function doCallbacksIfNeeded() {
-    if (bid.timeToRespond > pbjs.cbTimeout + pbjs.timeoutBuffer) {
-      var timedOut = true;
-      exports.executeCallback(timedOut);
-    }
-  }
-
-  // Add a bid to the auction.
-  function addBidToAuction() {
-    events.emit(CONSTANTS.EVENTS.BID_RESPONSE, bid);
-
-    pbjs._bidsReceived.push(bid);
-
-    if (bid.adUnitCode && bidsBackAdUnit(bid.adUnitCode)) {
-      triggerAdUnitCallbacks(bid.adUnitCode);
-    }
-
-    if (bidsBackAll()) {
-      exports.executeCallback();
-    }
-  }
-
-  // Video bids may fail if the cache is down, or there's trouble on the network.
-  function tryAddVideoBid(bid) {
-    if (_config.config.getConfig('usePrebidCache')) {
-      (0, _videoCache.store)([bid], (function (error, cacheIds) {
-        if (error) {
-          utils.logWarn('Failed to save to the video cache: ' + error + '. Video bid must be discarded.');
-        } else {
-          bid.videoCacheKey = cacheIds[0].uuid;
-          if (!bid.vastUrl) {
-            bid.vastUrl = (0, _videoCache.getCacheUrl)(bid.videoCacheKey);
-          }
-          addBidToAuction(bid);
-        }
-        doCallbacksIfNeeded();
-      }));
-    } else {
-      addBidToAuction(bid);
-      doCallbacksIfNeeded();
-    }
+  if (bid.mediaType === 'video') {
+    tryAddVideoBid(bid);
+  } else {
+    addBidToAuction(bid);
+    doCallbacksIfNeeded(bid);
   }
 }));
 
@@ -1836,6 +1866,12 @@ exports.getStandardBidderAdServerTargeting = getStandardBidderAdServerTargeting;
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+module.exports = {"JSON_MAPPING":{"PL_CODE":"code","PL_SIZE":"sizes","PL_BIDS":"bids","BD_BIDDER":"bidder","BD_ID":"paramsd","BD_PL_ID":"placementId","ADSERVER_TARGETING":"adserverTargeting","BD_SETTING_STANDARD":"standard"},"REPO_AND_VERSION":"prebid_prebid_0.34.9","DEBUG_MODE":"pbjs_debug","STATUS":{"GOOD":1,"NO_BID":2},"CB":{"TYPE":{"ALL_BIDS_BACK":"allRequestedBidsBack","AD_UNIT_BIDS_BACK":"adUnitBidsBack","BID_WON":"bidWon","REQUEST_BIDS":"requestBids"}},"EVENTS":{"AUCTION_INIT":"auctionInit","AUCTION_END":"auctionEnd","BID_ADJUSTMENT":"bidAdjustment","BID_TIMEOUT":"bidTimeout","BID_REQUESTED":"bidRequested","BID_RESPONSE":"bidResponse","BID_WON":"bidWon","SET_TARGETING":"setTargeting","REQUEST_BIDS":"requestBids","ADD_AD_UNITS":"addAdUnits"},"EVENT_ID_PATHS":{"bidWon":"adUnitCode"},"GRANULARITY_OPTIONS":{"LOW":"low","MEDIUM":"medium","HIGH":"high","AUTO":"auto","DENSE":"dense","CUSTOM":"custom"},"TARGETING_KEYS":["hb_bidder","hb_adid","hb_pb","hb_size","hb_deal"],"S2S":{"DEFAULT_ENDPOINT":"https://prebid.adnxs.com/pbs/v1/auction","SRC":"s2s","ADAPTER":"prebidServer","SYNC_ENDPOINT":"https://prebid.adnxs.com/pbs/v1/cookie_sync","SYNCED_BIDDERS_KEY":"pbjsSyncs"}}
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1895,12 +1931,6 @@ function Bid(statusCode, bidRequest) {
 exports.createBid = function (statusCode, bidRequest) {
   return new Bid(statusCode, bidRequest);
 };
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-module.exports = {"JSON_MAPPING":{"PL_CODE":"code","PL_SIZE":"sizes","PL_BIDS":"bids","BD_BIDDER":"bidder","BD_ID":"paramsd","BD_PL_ID":"placementId","ADSERVER_TARGETING":"adserverTargeting","BD_SETTING_STANDARD":"standard"},"REPO_AND_VERSION":"prebid_prebid_0.32.0","DEBUG_MODE":"pbjs_debug","STATUS":{"GOOD":1,"NO_BID":2},"CB":{"TYPE":{"ALL_BIDS_BACK":"allRequestedBidsBack","AD_UNIT_BIDS_BACK":"adUnitBidsBack","BID_WON":"bidWon","REQUEST_BIDS":"requestBids"}},"EVENTS":{"AUCTION_INIT":"auctionInit","AUCTION_END":"auctionEnd","BID_ADJUSTMENT":"bidAdjustment","BID_TIMEOUT":"bidTimeout","BID_REQUESTED":"bidRequested","BID_RESPONSE":"bidResponse","BID_WON":"bidWon","SET_TARGETING":"setTargeting","REQUEST_BIDS":"requestBids","ADD_AD_UNITS":"addAdUnits"},"EVENT_ID_PATHS":{"bidWon":"adUnitCode"},"GRANULARITY_OPTIONS":{"LOW":"low","MEDIUM":"medium","HIGH":"high","AUTO":"auto","DENSE":"dense","CUSTOM":"custom"},"TARGETING_KEYS":["hb_bidder","hb_adid","hb_pb","hb_size","hb_deal"],"S2S":{"DEFAULT_ENDPOINT":"https://prebid.adnxs.com/pbs/v1/auction","SRC":"s2s","ADAPTER":"prebidServer","SYNC_ENDPOINT":"https://prebid.adnxs.com/pbs/v1/cookie_sync","SYNCED_BIDDERS_KEY":"pbjsSyncs"}}
 
 /***/ }),
 /* 5 */
@@ -2002,441 +2032,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-exports.setAjaxTimeout = setAjaxTimeout;
-exports.ajax = ajax;
-
-var _url = __webpack_require__(12);
-
-var utils = __webpack_require__(0);
-
-var XHR_DONE = 4;
-var _timeout = 3000;
-
-/**
- * Simple IE9+ and cross-browser ajax request function
- * Note: x-domain requests in IE9 do not support the use of cookies
- *
- * @param url string url
- * @param callback {object | function} callback
- * @param data mixed data
- * @param options object
- */
-function setAjaxTimeout(timeout) {
-  _timeout = timeout;
-}
-
-function ajax(url, callback, data) {
-  var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-
-  try {
-    var x = void 0;
-    var useXDomainRequest = false;
-    var method = options.method || (data ? 'POST' : 'GET');
-
-    var callbacks = (typeof callback === 'undefined' ? 'undefined' : _typeof(callback)) === 'object' ? callback : {
-      success: function success() {
-        utils.logMessage('xhr success');
-      },
-      error: function error(e) {
-        utils.logError('xhr error', null, e);
-      }
-    };
-
-    if (typeof callback === 'function') {
-      callbacks.success = callback;
-    }
-
-    if (!window.XMLHttpRequest) {
-      useXDomainRequest = true;
-    } else {
-      x = new window.XMLHttpRequest();
-      if (x.responseType === undefined) {
-        useXDomainRequest = true;
-      }
-    }
-
-    if (useXDomainRequest) {
-      x = new window.XDomainRequest();
-      x.onload = function () {
-        callbacks.success(x.responseText, x);
-      };
-
-      // http://stackoverflow.com/questions/15786966/xdomainrequest-aborts-post-on-ie-9
-      x.onerror = function () {
-        callbacks.error('error', x);
-      };
-      x.ontimeout = function () {
-        callbacks.error('timeout', x);
-      };
-      x.onprogress = function () {
-        utils.logMessage('xhr onprogress');
-      };
-    } else {
-      x.onreadystatechange = function () {
-        if (x.readyState === XHR_DONE) {
-          var status = x.status;
-          if (status >= 200 && status < 300 || status === 304) {
-            callbacks.success(x.responseText, x);
-          } else {
-            callbacks.error(x.statusText, x);
-          }
-        }
-      };
-    }
-
-    if (method === 'GET' && data) {
-      var urlInfo = (0, _url.parse)(url, options);
-      _extends(urlInfo.search, data);
-      url = (0, _url.format)(urlInfo);
-    }
-
-    x.open(method, url);
-    // IE needs timoeut to be set after open - see #1410
-    x.timeout = _timeout;
-
-    if (!useXDomainRequest) {
-      if (options.withCredentials) {
-        x.withCredentials = true;
-      }
-      utils._each(options.customHeaders, (function (value, header) {
-        x.setRequestHeader(header, value);
-      }));
-      if (options.preflight) {
-        x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-      }
-      x.setRequestHeader('Content-Type', options.contentType || 'text/plain');
-    }
-    x.send(method === 'POST' && data);
-  } catch (error) {
-    utils.logError('xhr construction', error);
-  }
-}
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = Adapter;
-function Adapter(code) {
-  var bidderCode = code;
-
-  function setBidderCode(code) {
-    bidderCode = code;
-  }
-
-  function getBidderCode() {
-    return bidderCode;
-  }
-
-  function callBids() {}
-
-  return {
-    callBids: callBids,
-    setBidderCode: setBidderCode,
-    getBidderCode: getBidderCode
-  };
-}
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.config = undefined;
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /*
-                                                                                                                                                                                                                                                                               * Module for getting and setting Prebid configuration.
-                                                                                                                                                                                                                                                                               *
-                                                                                                                                                                                                                                                                               * Prebid previously defined these properties directly on the global object:
-                                                                                                                                                                                                                                                                               * pbjs.logging = true;
-                                                                                                                                                                                                                                                                               *
-                                                                                                                                                                                                                                                                               * Defining and access properties in this way is now deprecated, but these will
-                                                                                                                                                                                                                                                                               * continue to work during a deprecation window.
-                                                                                                                                                                                                                                                                               */
-
-
-exports.newConfig = newConfig;
-
-var _cpmBucketManager = __webpack_require__(28);
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var utils = __webpack_require__(0);
-
-var DEFAULT_DEBUG = false;
-var DEFAULT_BIDDER_TIMEOUT = 3000;
-var DEFAULT_PUBLISHER_DOMAIN = window.location.origin;
-var DEFAULT_COOKIESYNC_DELAY = 100;
-var DEFAULT_ENABLE_SEND_ALL_BIDS = false;
-var DEFAULT_USERSYNC = {
-  syncEnabled: true,
-  pixelEnabled: true,
-  syncsPerBidder: 5,
-  syncDelay: 3000
-};
-
-var GRANULARITY_OPTIONS = {
-  LOW: 'low',
-  MEDIUM: 'medium',
-  HIGH: 'high',
-  AUTO: 'auto',
-  DENSE: 'dense',
-  CUSTOM: 'custom'
-};
-
-var ALL_TOPICS = '*';
-
-/**
- * @typedef {object} PrebidConfig
- *
- * @property {bool} usePrebidCache True if we should use prebid-cache to store video bids before adding
- *   bids to the auction, and false otherwise. **NOTE** This must be true if you want to use the
- *   dfpAdServerVideo module.
- */
-
-function newConfig() {
-  var listeners = [];
-
-  var config = {
-    // `debug` is equivalent to legacy `pbjs.logging` property
-    _debug: DEFAULT_DEBUG,
-    get debug() {
-      if (pbjs.logging || pbjs.logging === false) {
-        return pbjs.logging;
-      }
-      return this._debug;
-    },
-    set debug(val) {
-      this._debug = val;
-    },
-
-    // default timeout for all bids
-    _bidderTimeout: DEFAULT_BIDDER_TIMEOUT,
-    get bidderTimeout() {
-      return pbjs.bidderTimeout || this._bidderTimeout;
-    },
-    set bidderTimeout(val) {
-      this._bidderTimeout = val;
-    },
-
-    // domain where prebid is running for cross domain iframe communication
-    _publisherDomain: DEFAULT_PUBLISHER_DOMAIN,
-    get publisherDomain() {
-      return pbjs.publisherDomain || this._publisherDomain;
-    },
-    set publisherDomain(val) {
-      this._publisherDomain = val;
-    },
-
-    // delay to request cookie sync to stay out of critical path
-    _cookieSyncDelay: DEFAULT_COOKIESYNC_DELAY,
-    get cookieSyncDelay() {
-      return pbjs.cookieSyncDelay || this._cookieSyncDelay;
-    },
-    set cookieSyncDelay(val) {
-      this._cookieSyncDelay = val;
-    },
-
-    // calls existing function which may be moved after deprecation
-    _priceGranularity: GRANULARITY_OPTIONS.MEDIUM,
-    set priceGranularity(val) {
-      if (validatePriceGranularity(val)) {
-        if (typeof val === 'string') {
-          this._priceGranularity = hasGranularity(val) ? val : GRANULARITY_OPTIONS.MEDIUM;
-        } else if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
-          this._customPriceBucket = val;
-          this._priceGranularity = GRANULARITY_OPTIONS.CUSTOM;
-          utils.logMessage('Using custom price granularity');
-        }
-      }
-    },
-    get priceGranularity() {
-      return this._priceGranularity;
-    },
-
-    _customPriceBucket: {},
-    get customPriceBucket() {
-      return this._customPriceBucket;
-    },
-
-    _sendAllBids: DEFAULT_ENABLE_SEND_ALL_BIDS,
-    get enableSendAllBids() {
-      return this._sendAllBids;
-    },
-    set enableSendAllBids(val) {
-      this._sendAllBids = val;
-    },
-
-    // calls existing function which may be moved after deprecation
-    set bidderSequence(val) {
-      pbjs.setBidderSequence(val);
-    },
-
-    // calls existing function which may be moved after deprecation
-    set s2sConfig(val) {
-      pbjs.setS2SConfig(val);
-    },
-
-    // userSync defaults
-    userSync: DEFAULT_USERSYNC
-  };
-
-  function hasGranularity(val) {
-    return Object.keys(GRANULARITY_OPTIONS).find((function (option) {
-      return val === GRANULARITY_OPTIONS[option];
-    }));
-  }
-
-  function validatePriceGranularity(val) {
-    if (!val) {
-      utils.logError('Prebid Error: no value passed to `setPriceGranularity()`');
-      return false;
-    }
-    if (typeof val === 'string') {
-      if (!hasGranularity(val)) {
-        utils.logWarn('Prebid Warning: setPriceGranularity was called with invalid setting, using `medium` as default.');
-      }
-    } else if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
-      if (!(0, _cpmBucketManager.isValidPriceConfig)(val)) {
-        utils.logError('Invalid custom price value passed to `setPriceGranularity()`');
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /*
-   * Returns configuration object if called without parameters,
-   * or single configuration property if given a string matching a configuration
-   * property name.  Allows deep access e.g. getConfig('currency.adServerCurrency')
-   *
-   * If called with callback parameter, or a string and a callback parameter,
-   * subscribes to configuration updates. See `subscribe` function for usage.
-   */
-  function getConfig() {
-    if (arguments.length <= 1 && typeof (arguments.length <= 0 ? undefined : arguments[0]) !== 'function') {
-      var option = arguments.length <= 0 ? undefined : arguments[0];
-      return option ? utils.deepAccess(config, option) : config;
-    }
-
-    return subscribe.apply(undefined, arguments);
-  }
-
-  /*
-   * Sets configuration given an object containing key-value pairs and calls
-   * listeners that were added by the `subscribe` function
-   */
-  function setConfig(options) {
-    if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') {
-      utils.logError('setConfig options must be an object');
-      return;
-    }
-
-    _extends(config, options);
-    callSubscribers(options);
-  }
-
-  /*
-   * Adds a function to a set of listeners that are invoked whenever `setConfig`
-   * is called. The subscribed function will be passed the options object that
-   * was used in the `setConfig` call. Topics can be subscribed to to only get
-   * updates when specific properties are updated by passing a topic string as
-   * the first parameter.
-   *
-   * Returns an `unsubscribe` function for removing the subscriber from the
-   * set of listeners
-   *
-   * Example use:
-   * // subscribe to all configuration changes
-   * subscribe((config) => console.log('config set:', config));
-   *
-   * // subscribe to only 'logging' changes
-   * subscribe('logging', (config) => console.log('logging set:', config));
-   *
-   * // unsubscribe
-   * const unsubscribe = subscribe(...);
-   * unsubscribe(); // no longer listening
-   */
-  function subscribe(topic, listener) {
-    var callback = listener;
-
-    if (typeof topic !== 'string') {
-      // first param should be callback function in this case,
-      // meaning it gets called for any config change
-      callback = topic;
-      topic = ALL_TOPICS;
-    }
-
-    if (typeof callback !== 'function') {
-      utils.logError('listener must be a function');
-      return;
-    }
-
-    listeners.push({ topic: topic, callback: callback });
-
-    // save and call this function to remove the listener
-    return function unsubscribe() {
-      listeners.splice(listeners.indexOf(listener), 1);
-    };
-  }
-
-  /*
-   * Calls listeners that were added by the `subscribe` function
-   */
-  function callSubscribers(options) {
-    var TOPICS = Object.keys(options);
-
-    // call subscribers of a specific topic, passing only that configuration
-    listeners.filter((function (listener) {
-      return TOPICS.includes(listener.topic);
-    })).forEach((function (listener) {
-      listener.callback(_defineProperty({}, listener.topic, options[listener.topic]));
-    }));
-
-    // call subscribers that didn't give a topic, passing everything that was set
-    listeners.filter((function (listener) {
-      return listener.topic === ALL_TOPICS;
-    })).forEach((function (listener) {
-      return listener.callback(options);
-    }));
-  }
-
-  return {
-    getConfig: getConfig,
-    setConfig: setConfig
-  };
-}
-
-var config = exports.config = newConfig();
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -2444,7 +2039,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 exports.registerBidder = registerBidder;
 exports.newBidder = newBidder;
 
-var _adapter = __webpack_require__(7);
+var _adapter = __webpack_require__(9);
 
 var _adapter2 = _interopRequireDefault(_adapter);
 
@@ -2454,17 +2049,17 @@ var _adaptermanager2 = _interopRequireDefault(_adaptermanager);
 
 var _config = __webpack_require__(8);
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
 var _bidmanager = __webpack_require__(2);
 
 var _bidmanager2 = _interopRequireDefault(_bidmanager);
 
-var _bidfactory = __webpack_require__(3);
+var _bidfactory = __webpack_require__(4);
 
 var _bidfactory2 = _interopRequireDefault(_bidfactory);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 var _userSync = __webpack_require__(19);
 
@@ -2689,10 +2284,18 @@ function newBidder(spec) {
       var onResponse = (0, _utils.delayExecution)(afterAllResponses, requests.length);
       requests.forEach(processRequest);
 
+      function formatGetParameters(data) {
+        if (data) {
+          return '?' + ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' ? (0, _utils.parseQueryStringParameters)(data) : data);
+        }
+
+        return '';
+      }
+
       function processRequest(request) {
         switch (request.method) {
           case 'GET':
-            (0, _ajax.ajax)(request.url + '?' + (_typeof(request.data) === 'object' ? (0, _utils.parseQueryStringParameters)(request.data) : request.data), {
+            (0, _ajax.ajax)('' + request.url + formatGetParameters(request.data), {
               success: onSuccess,
               error: onFailure
             }, undefined, _extends({
@@ -2821,6 +2424,462 @@ function newBidder(spec) {
 }
 
 /***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+exports.setAjaxTimeout = setAjaxTimeout;
+exports.ajax = ajax;
+
+var _url = __webpack_require__(13);
+
+var utils = __webpack_require__(0);
+
+var XHR_DONE = 4;
+var _timeout = 3000;
+
+/**
+ * Simple IE9+ and cross-browser ajax request function
+ * Note: x-domain requests in IE9 do not support the use of cookies
+ *
+ * @param url string url
+ * @param callback {object | function} callback
+ * @param data mixed data
+ * @param options object
+ */
+function setAjaxTimeout(timeout) {
+  _timeout = timeout;
+}
+
+function ajax(url, callback, data) {
+  var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+  try {
+    var x = void 0;
+    var useXDomainRequest = false;
+    var method = options.method || (data ? 'POST' : 'GET');
+
+    var callbacks = (typeof callback === 'undefined' ? 'undefined' : _typeof(callback)) === 'object' ? callback : {
+      success: function success() {
+        utils.logMessage('xhr success');
+      },
+      error: function error(e) {
+        utils.logError('xhr error', null, e);
+      }
+    };
+
+    if (typeof callback === 'function') {
+      callbacks.success = callback;
+    }
+
+    if (!window.XMLHttpRequest) {
+      useXDomainRequest = true;
+    } else {
+      x = new window.XMLHttpRequest();
+      if (x.responseType === undefined) {
+        useXDomainRequest = true;
+      }
+    }
+
+    if (useXDomainRequest) {
+      x = new window.XDomainRequest();
+      x.onload = function () {
+        callbacks.success(x.responseText, x);
+      };
+
+      // http://stackoverflow.com/questions/15786966/xdomainrequest-aborts-post-on-ie-9
+      x.onerror = function () {
+        callbacks.error('error', x);
+      };
+      x.ontimeout = function () {
+        callbacks.error('timeout', x);
+      };
+      x.onprogress = function () {
+        utils.logMessage('xhr onprogress');
+      };
+    } else {
+      x.onreadystatechange = function () {
+        if (x.readyState === XHR_DONE) {
+          var status = x.status;
+          if (status >= 200 && status < 300 || status === 304) {
+            callbacks.success(x.responseText, x);
+          } else {
+            callbacks.error(x.statusText, x);
+          }
+        }
+      };
+    }
+
+    if (method === 'GET' && data) {
+      var urlInfo = (0, _url.parse)(url, options);
+      _extends(urlInfo.search, data);
+      url = (0, _url.format)(urlInfo);
+    }
+
+    x.open(method, url);
+    // IE needs timoeut to be set after open - see #1410
+    x.timeout = _timeout;
+
+    if (!useXDomainRequest) {
+      if (options.withCredentials) {
+        x.withCredentials = true;
+      }
+      utils._each(options.customHeaders, (function (value, header) {
+        x.setRequestHeader(header, value);
+      }));
+      if (options.preflight) {
+        x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+      }
+      x.setRequestHeader('Content-Type', options.contentType || 'text/plain');
+    }
+    x.send(method === 'POST' && data);
+  } catch (error) {
+    utils.logError('xhr construction', error);
+  }
+}
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.config = undefined;
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /*
+                                                                                                                                                                                                                                                                               * Module for getting and setting Prebid configuration.
+                                                                                                                                                                                                                                                                               *
+                                                                                                                                                                                                                                                                               * Prebid previously defined these properties directly on the global object:
+                                                                                                                                                                                                                                                                               * pbjs.logging = true;
+                                                                                                                                                                                                                                                                               *
+                                                                                                                                                                                                                                                                               * Defining and access properties in this way is now deprecated, but these will
+                                                                                                                                                                                                                                                                               * continue to work during a deprecation window.
+                                                                                                                                                                                                                                                                               */
+
+
+exports.newConfig = newConfig;
+
+var _cpmBucketManager = __webpack_require__(35);
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var utils = __webpack_require__(0);
+
+var DEFAULT_DEBUG = false;
+var DEFAULT_BIDDER_TIMEOUT = 3000;
+var DEFAULT_PUBLISHER_DOMAIN = window.location.origin;
+var DEFAULT_COOKIESYNC_DELAY = 100;
+var DEFAULT_ENABLE_SEND_ALL_BIDS = false;
+
+var GRANULARITY_OPTIONS = {
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
+  AUTO: 'auto',
+  DENSE: 'dense',
+  CUSTOM: 'custom'
+};
+
+var ALL_TOPICS = '*';
+
+/**
+ * @typedef {object} PrebidConfig
+ *
+ * @property {bool} usePrebidCache True if we should use prebid-cache to store video bids before adding
+ *   bids to the auction, and false otherwise. **NOTE** This must be true if you want to use the
+ *   dfpAdServerVideo module.
+ */
+
+function newConfig() {
+  var listeners = [];
+
+  var defaults = {};
+
+  var config = {
+    // `debug` is equivalent to legacy `pbjs.logging` property
+    _debug: DEFAULT_DEBUG,
+    get debug() {
+      if (pbjs.logging || pbjs.logging === false) {
+        return pbjs.logging;
+      }
+      return this._debug;
+    },
+    set debug(val) {
+      this._debug = val;
+    },
+
+    // default timeout for all bids
+    _bidderTimeout: DEFAULT_BIDDER_TIMEOUT,
+    get bidderTimeout() {
+      return pbjs.bidderTimeout || this._bidderTimeout;
+    },
+    set bidderTimeout(val) {
+      this._bidderTimeout = val;
+    },
+
+    // domain where prebid is running for cross domain iframe communication
+    _publisherDomain: DEFAULT_PUBLISHER_DOMAIN,
+    get publisherDomain() {
+      return pbjs.publisherDomain || this._publisherDomain;
+    },
+    set publisherDomain(val) {
+      this._publisherDomain = val;
+    },
+
+    // delay to request cookie sync to stay out of critical path
+    _cookieSyncDelay: DEFAULT_COOKIESYNC_DELAY,
+    get cookieSyncDelay() {
+      return pbjs.cookieSyncDelay || this._cookieSyncDelay;
+    },
+    set cookieSyncDelay(val) {
+      this._cookieSyncDelay = val;
+    },
+
+    // calls existing function which may be moved after deprecation
+    _priceGranularity: GRANULARITY_OPTIONS.MEDIUM,
+    set priceGranularity(val) {
+      if (validatePriceGranularity(val)) {
+        if (typeof val === 'string') {
+          this._priceGranularity = hasGranularity(val) ? val : GRANULARITY_OPTIONS.MEDIUM;
+        } else if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
+          this._customPriceBucket = val;
+          this._priceGranularity = GRANULARITY_OPTIONS.CUSTOM;
+          utils.logMessage('Using custom price granularity');
+        }
+      }
+    },
+    get priceGranularity() {
+      return this._priceGranularity;
+    },
+
+    _customPriceBucket: {},
+    get customPriceBucket() {
+      return this._customPriceBucket;
+    },
+
+    _sendAllBids: DEFAULT_ENABLE_SEND_ALL_BIDS,
+    get enableSendAllBids() {
+      return this._sendAllBids;
+    },
+    set enableSendAllBids(val) {
+      this._sendAllBids = val;
+    },
+
+    // calls existing function which may be moved after deprecation
+    set bidderSequence(val) {
+      pbjs.setBidderSequence(val);
+    },
+
+    // calls existing function which may be moved after deprecation
+    set s2sConfig(val) {
+      pbjs.setS2SConfig(val);
+    }
+  };
+
+  function hasGranularity(val) {
+    return Object.keys(GRANULARITY_OPTIONS).find((function (option) {
+      return val === GRANULARITY_OPTIONS[option];
+    }));
+  }
+
+  function validatePriceGranularity(val) {
+    if (!val) {
+      utils.logError('Prebid Error: no value passed to `setPriceGranularity()`');
+      return false;
+    }
+    if (typeof val === 'string') {
+      if (!hasGranularity(val)) {
+        utils.logWarn('Prebid Warning: setPriceGranularity was called with invalid setting, using `medium` as default.');
+      }
+    } else if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
+      if (!(0, _cpmBucketManager.isValidPriceConfig)(val)) {
+        utils.logError('Invalid custom price value passed to `setPriceGranularity()`');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /*
+   * Returns configuration object if called without parameters,
+   * or single configuration property if given a string matching a configuration
+   * property name.  Allows deep access e.g. getConfig('currency.adServerCurrency')
+   *
+   * If called with callback parameter, or a string and a callback parameter,
+   * subscribes to configuration updates. See `subscribe` function for usage.
+   */
+  function getConfig() {
+    if (arguments.length <= 1 && typeof (arguments.length <= 0 ? undefined : arguments[0]) !== 'function') {
+      var option = arguments.length <= 0 ? undefined : arguments[0];
+      return option ? utils.deepAccess(config, option) : config;
+    }
+
+    return subscribe.apply(undefined, arguments);
+  }
+
+  /*
+   * Sets configuration given an object containing key-value pairs and calls
+   * listeners that were added by the `subscribe` function
+   */
+  function setConfig(options) {
+    if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') {
+      utils.logError('setConfig options must be an object');
+      return;
+    }
+
+    var topics = Object.keys(options);
+    var topicalConfig = {};
+
+    topics.forEach((function (topic) {
+      var option = options[topic];
+
+      if (_typeof(defaults[topic]) === 'object' && (typeof option === 'undefined' ? 'undefined' : _typeof(option)) === 'object') {
+        option = _extends({}, defaults[topic], option);
+      }
+
+      topicalConfig[topic] = config[topic] = option;
+    }));
+
+    callSubscribers(topicalConfig);
+  }
+
+  /**
+   * Sets configuration defaults which setConfig values can be applied on top of
+   * @param {object} options
+   */
+  function setDefaults(options) {
+    if ((typeof defaults === 'undefined' ? 'undefined' : _typeof(defaults)) !== 'object') {
+      utils.logError('defaults must be an object');
+      return;
+    }
+
+    _extends(defaults, options);
+    // Add default values to config as well
+    _extends(config, options);
+  }
+
+  /*
+   * Adds a function to a set of listeners that are invoked whenever `setConfig`
+   * is called. The subscribed function will be passed the options object that
+   * was used in the `setConfig` call. Topics can be subscribed to to only get
+   * updates when specific properties are updated by passing a topic string as
+   * the first parameter.
+   *
+   * Returns an `unsubscribe` function for removing the subscriber from the
+   * set of listeners
+   *
+   * Example use:
+   * // subscribe to all configuration changes
+   * subscribe((config) => console.log('config set:', config));
+   *
+   * // subscribe to only 'logging' changes
+   * subscribe('logging', (config) => console.log('logging set:', config));
+   *
+   * // unsubscribe
+   * const unsubscribe = subscribe(...);
+   * unsubscribe(); // no longer listening
+   */
+  function subscribe(topic, listener) {
+    var callback = listener;
+
+    if (typeof topic !== 'string') {
+      // first param should be callback function in this case,
+      // meaning it gets called for any config change
+      callback = topic;
+      topic = ALL_TOPICS;
+    }
+
+    if (typeof callback !== 'function') {
+      utils.logError('listener must be a function');
+      return;
+    }
+
+    listeners.push({ topic: topic, callback: callback });
+
+    // save and call this function to remove the listener
+    return function unsubscribe() {
+      listeners.splice(listeners.indexOf(listener), 1);
+    };
+  }
+
+  /*
+   * Calls listeners that were added by the `subscribe` function
+   */
+  function callSubscribers(options) {
+    var TOPICS = Object.keys(options);
+
+    // call subscribers of a specific topic, passing only that configuration
+    listeners.filter((function (listener) {
+      return TOPICS.includes(listener.topic);
+    })).forEach((function (listener) {
+      listener.callback(_defineProperty({}, listener.topic, options[listener.topic]));
+    }));
+
+    // call subscribers that didn't give a topic, passing everything that was set
+    listeners.filter((function (listener) {
+      return listener.topic === ALL_TOPICS;
+    })).forEach((function (listener) {
+      return listener.callback(options);
+    }));
+  }
+
+  return {
+    getConfig: getConfig,
+    setConfig: setConfig,
+    setDefaults: setDefaults
+  };
+}
+
+var config = exports.config = newConfig();
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = Adapter;
+function Adapter(code) {
+  var bidderCode = code;
+
+  function setBidderCode(code) {
+    bidderCode = code;
+  }
+
+  function getBidderCode() {
+    return bidderCode;
+  }
+
+  function callBids() {}
+
+  return {
+    callBids: callBids,
+    setBidderCode: setBidderCode,
+    getBidderCode: getBidderCode
+  };
+}
+
+/***/ }),
 /* 10 */,
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -2834,7 +2893,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
  * events.js
  */
 var utils = __webpack_require__(0);
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 var slice = Array.prototype.slice;
 var push = Array.prototype.push;
 
@@ -2991,6 +3050,34 @@ module.exports = (function () {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+/**
+ * This file contains the valid Media Types in Prebid.
+ *
+ * All adapters are assumed to support banner ads. Other media types are specified by Adapters when they
+ * register themselves with prebid-core.
+ */
+
+/**
+ * @typedef {('native'|'video'|'banner')} MediaType
+ */
+
+/** @type MediaType */
+var NATIVE = exports.NATIVE = 'native';
+/** @type MediaType */
+var VIDEO = exports.VIDEO = 'video';
+/** @type MediaType */
+var BANNER = exports.BANNER = 'banner';
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
 
@@ -3047,38 +3134,10 @@ function format(obj) {
 }
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-/**
- * This file contains the valid Media Types in Prebid.
- *
- * All adapters are assumed to support banner ads. Other media types are specified by Adapters when they
- * register themselves with prebid-core.
- */
-
-/**
- * @typedef {('native'|'video'|'banner')} MediaType
- */
-
-/** @type MediaType */
-var NATIVE = exports.NATIVE = 'native';
-/** @type MediaType */
-var VIDEO = exports.VIDEO = 'video';
-/** @type MediaType */
-var BANNER = exports.BANNER = 'banner';
-
-/***/ }),
 /* 14 */
 /***/ (function(module, exports) {
 
-var core = module.exports = { version: '2.5.1' };
+var core = module.exports = { version: '2.6.10' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 
@@ -3093,6 +3152,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.hasNonNativeBidder = exports.nativeBidder = exports.nativeAdUnit = exports.NATIVE_TARGETING_KEYS = exports.NATIVE_KEYS = exports.nativeAdapters = undefined;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 exports.processNativeAdUnitParams = processNativeAdUnitParams;
 exports.nativeBidIsValid = nativeBidIsValid;
 exports.fireNativeTrackers = fireNativeTrackers;
@@ -3254,6 +3316,12 @@ function getNativeTargeting(bid) {
   Object.keys(bid['native']).forEach((function (asset) {
     var key = NATIVE_KEYS[asset];
     var value = bid['native'][asset];
+
+    // native image-type assets can be a string or an object with a url prop
+    if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value.url) {
+      value = value.url;
+    }
+
     if (key) {
       keyValues[key] = value;
     }
@@ -3266,6 +3334,14 @@ function getNativeTargeting(bid) {
 /* 16 */
 /***/ (function(module, exports) {
 
+var core = module.exports = { version: '2.6.10' };
+if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
+
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports) {
+
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global = module.exports = typeof window != 'undefined' && window.Math == Math
   ? window : typeof self != 'undefined' && self.Math == Math ? self
@@ -3275,62 +3351,116 @@ if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var global = __webpack_require__(16);
-var core = __webpack_require__(14);
-var hide = __webpack_require__(22);
-var redefine = __webpack_require__(298);
-var ctx = __webpack_require__(33);
-var PROTOTYPE = 'prototype';
+"use strict";
 
-var $export = function (type, name, source) {
-  var IS_FORCED = type & $export.F;
-  var IS_GLOBAL = type & $export.G;
-  var IS_STATIC = type & $export.S;
-  var IS_PROTO = type & $export.P;
-  var IS_BIND = type & $export.B;
-  var target = IS_GLOBAL ? global : IS_STATIC ? global[name] || (global[name] = {}) : (global[name] || {})[PROTOTYPE];
-  var exports = IS_GLOBAL ? core : core[name] || (core[name] = {});
-  var expProto = exports[PROTOTYPE] || (exports[PROTOTYPE] = {});
-  var key, own, out, exp;
-  if (IS_GLOBAL) source = name;
-  for (key in source) {
-    // contains in native
-    own = !IS_FORCED && target && target[key] !== undefined;
-    // export native or passed
-    out = (own ? target : source)[key];
-    // bind timers to global for call from export context
-    exp = IS_BIND && own ? ctx(out, global) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
-    // extend global
-    if (target) redefine(target, key, out, type & $export.U);
-    // export
-    if (exports[key] != out) hide(exports, key, exp);
-    if (IS_PROTO && expProto[key] != out) expProto[key] = out;
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Renderer = Renderer;
+
+var _adloader = __webpack_require__(5);
+
+var _utils = __webpack_require__(0);
+
+var utils = _interopRequireWildcard(_utils);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+/**
+ * @typedef {object} Renderer
+ *
+ * A Renderer stores some functions which are used to render a particular Bid.
+ * These are used in Outstream Video Bids, returned on the Bid by the adapter, and will
+ * be used to render that bid unless the Publisher overrides them.
+ */
+
+function Renderer(options) {
+  var _this = this;
+
+  var url = options.url,
+      config = options.config,
+      id = options.id,
+      callback = options.callback,
+      loaded = options.loaded;
+
+  this.url = url;
+  this.config = config;
+  this.handlers = {};
+  this.id = id;
+
+  // a renderer may push to the command queue to delay rendering until the
+  // render function is loaded by loadScript, at which point the the command
+  // queue will be processed
+  this.loaded = loaded;
+  this.cmd = [];
+  this.push = function (func) {
+    if (typeof func !== 'function') {
+      utils.logError('Commands given to Renderer.push must be wrapped in a function');
+      return;
+    }
+    _this.loaded ? func.call() : _this.cmd.push(func);
+  };
+
+  // bidders may override this with the `callback` property given to `install`
+  this.callback = callback || function () {
+    _this.loaded = true;
+    _this.process();
+  };
+
+  // we expect to load a renderer url once only so cache the request to load script
+  (0, _adloader.loadScript)(url, this.callback, true);
+}
+
+Renderer.install = function (_ref) {
+  var url = _ref.url,
+      config = _ref.config,
+      id = _ref.id,
+      callback = _ref.callback,
+      loaded = _ref.loaded;
+
+  return new Renderer({ url: url, config: config, id: id, callback: callback, loaded: loaded });
+};
+
+Renderer.prototype.getConfig = function () {
+  return this.config;
+};
+
+Renderer.prototype.setRender = function (fn) {
+  this.render = fn;
+};
+
+Renderer.prototype.setEventHandlers = function (handlers) {
+  this.handlers = handlers;
+};
+
+Renderer.prototype.handleVideoEvent = function (_ref2) {
+  var id = _ref2.id,
+      eventName = _ref2.eventName;
+
+  if (typeof this.handlers[eventName] === 'function') {
+    this.handlers[eventName]();
+  }
+
+  utils.logMessage('Prebid Renderer event for id ' + id + ' type ' + eventName);
+};
+
+/*
+ * Calls functions that were pushed to the command queue before the
+ * renderer was loaded by `loadScript`
+ */
+Renderer.prototype.process = function () {
+  while (this.cmd.length > 0) {
+    try {
+      this.cmd.shift().call();
+    } catch (error) {
+      utils.logError('Error processing Renderer command: ', error);
+    }
   }
 };
-global.core = core;
-// type bitmap
-$export.F = 1;   // forced
-$export.G = 2;   // global
-$export.S = 4;   // static
-$export.P = 8;   // proto
-$export.B = 16;  // bind
-$export.W = 32;  // wrap
-$export.U = 64;  // safe
-$export.R = 128; // real proto method for `library`
-module.exports = $export;
-
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports) {
-
-module.exports = function (it) {
-  return typeof it === 'object' ? it !== null : typeof it === 'function';
-};
-
 
 /***/ }),
 /* 19 */
@@ -3357,6 +3487,16 @@ var utils = _interopRequireWildcard(_utils);
 var _config = __webpack_require__(8);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+// Set userSync default values
+_config.config.setDefaults({
+  'userSync': {
+    syncEnabled: true,
+    pixelEnabled: true,
+    syncsPerBidder: 5,
+    syncDelay: 3000
+  }
+});
 
 /**
  * Factory function which creates a new UserSyncPool.
@@ -3565,118 +3705,180 @@ var userSync = exports.userSync = newUserSync({
 
 /***/ }),
 /* 20 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+var global = module.exports = typeof window != 'undefined' && window.Math == Math
+  ? window : typeof self != 'undefined' && self.Math == Math ? self
+  // eslint-disable-next-line no-new-func
+  : Function('return this')();
+if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
 
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Renderer = Renderer;
-
-var _adloader = __webpack_require__(5);
-
-var _utils = __webpack_require__(0);
-
-var utils = _interopRequireWildcard(_utils);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
-/**
- * @typedef {object} Renderer
- *
- * A Renderer stores some functions which are used to render a particular Bid.
- * These are used in Outstream Video Bids, returned on the Bid by the adapter, and will
- * be used to render that bid unless the Publisher overrides them.
- */
-
-function Renderer(options) {
-  var _this = this;
-
-  var url = options.url,
-      config = options.config,
-      id = options.id,
-      callback = options.callback,
-      loaded = options.loaded;
-
-  this.url = url;
-  this.config = config;
-  this.handlers = {};
-  this.id = id;
-
-  // a renderer may push to the command queue to delay rendering until the
-  // render function is loaded by loadScript, at which point the the command
-  // queue will be processed
-  this.loaded = loaded;
-  this.cmd = [];
-  this.push = function (func) {
-    if (typeof func !== 'function') {
-      utils.logError('Commands given to Renderer.push must be wrapped in a function');
-      return;
-    }
-    _this.loaded ? func.call() : _this.cmd.push(func);
-  };
-
-  // bidders may override this with the `callback` property given to `install`
-  this.callback = callback || function () {
-    _this.loaded = true;
-    _this.process();
-  };
-
-  // we expect to load a renderer url once only so cache the request to load script
-  (0, _adloader.loadScript)(url, this.callback, true);
-}
-
-Renderer.install = function (_ref) {
-  var url = _ref.url,
-      config = _ref.config,
-      id = _ref.id,
-      callback = _ref.callback,
-      loaded = _ref.loaded;
-
-  return new Renderer({ url: url, config: config, id: id, callback: callback, loaded: loaded });
-};
-
-Renderer.prototype.getConfig = function () {
-  return this.config;
-};
-
-Renderer.prototype.setRender = function (fn) {
-  this.render = fn;
-};
-
-Renderer.prototype.setEventHandlers = function (handlers) {
-  this.handlers = handlers;
-};
-
-Renderer.prototype.handleVideoEvent = function (_ref2) {
-  var id = _ref2.id,
-      eventName = _ref2.eventName;
-
-  if (typeof this.handlers[eventName] === 'function') {
-    this.handlers[eventName]();
-  }
-
-  utils.logMessage('Prebid Renderer event for id ' + id + ' type ' + eventName);
-};
-
-/*
- * Calls functions that were pushed to the command queue before the
- * renderer was loaded by `loadScript`
- */
-Renderer.prototype.process = function () {
-  while (this.cmd.length > 0) {
-    try {
-      this.cmd.shift().call();
-    } catch (error) {
-      utils.logError('Error processing Renderer command: ', error);
-    }
-  }
-};
 
 /***/ }),
 /* 21 */
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(17);
+var core = __webpack_require__(14);
+var hide = __webpack_require__(29);
+var redefine = __webpack_require__(405);
+var ctx = __webpack_require__(48);
+var PROTOTYPE = 'prototype';
+
+var $export = function (type, name, source) {
+  var IS_FORCED = type & $export.F;
+  var IS_GLOBAL = type & $export.G;
+  var IS_STATIC = type & $export.S;
+  var IS_PROTO = type & $export.P;
+  var IS_BIND = type & $export.B;
+  var target = IS_GLOBAL ? global : IS_STATIC ? global[name] || (global[name] = {}) : (global[name] || {})[PROTOTYPE];
+  var exports = IS_GLOBAL ? core : core[name] || (core[name] = {});
+  var expProto = exports[PROTOTYPE] || (exports[PROTOTYPE] = {});
+  var key, own, out, exp;
+  if (IS_GLOBAL) source = name;
+  for (key in source) {
+    // contains in native
+    own = !IS_FORCED && target && target[key] !== undefined;
+    // export native or passed
+    out = (own ? target : source)[key];
+    // bind timers to global for call from export context
+    exp = IS_BIND && own ? ctx(out, global) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
+    // extend global
+    if (target) redefine(target, key, out, type & $export.U);
+    // export
+    if (exports[key] != out) hide(exports, key, exp);
+    if (IS_PROTO && expProto[key] != out) expProto[key] = out;
+  }
+};
+global.core = core;
+// type bitmap
+$export.F = 1;   // forced
+$export.G = 2;   // global
+$export.S = 4;   // static
+$export.P = 8;   // proto
+$export.B = 16;  // bind
+$export.W = 32;  // wrap
+$export.U = 64;  // safe
+$export.R = 128; // real proto method for `library`
+module.exports = $export;
+
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// Thank's IE8 for his funny defineProperty
+module.exports = !__webpack_require__(30)((function () {
+  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+}));
+
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(20);
+var core = __webpack_require__(16);
+var ctx = __webpack_require__(37);
+var hide = __webpack_require__(102);
+var has = __webpack_require__(109);
+var PROTOTYPE = 'prototype';
+
+var $export = function (type, name, source) {
+  var IS_FORCED = type & $export.F;
+  var IS_GLOBAL = type & $export.G;
+  var IS_STATIC = type & $export.S;
+  var IS_PROTO = type & $export.P;
+  var IS_BIND = type & $export.B;
+  var IS_WRAP = type & $export.W;
+  var exports = IS_GLOBAL ? core : core[name] || (core[name] = {});
+  var expProto = exports[PROTOTYPE];
+  var target = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE];
+  var key, own, out;
+  if (IS_GLOBAL) source = name;
+  for (key in source) {
+    // contains in native
+    own = !IS_FORCED && target && target[key] !== undefined;
+    if (own && has(exports, key)) continue;
+    // export native or passed
+    out = own ? target[key] : source[key];
+    // prevent global pollution for namespaces
+    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
+    // bind timers to global for call from export context
+    : IS_BIND && own ? ctx(out, global)
+    // wrap global constructors for prevent change them in library
+    : IS_WRAP && target[key] == out ? (function (C) {
+      var F = function (a, b, c) {
+        if (this instanceof C) {
+          switch (arguments.length) {
+            case 0: return new C();
+            case 1: return new C(a);
+            case 2: return new C(a, b);
+          } return new C(a, b, c);
+        } return C.apply(this, arguments);
+      };
+      F[PROTOTYPE] = C[PROTOTYPE];
+      return F;
+    // make static versions for prototype methods
+    })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
+    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
+    if (IS_PROTO) {
+      (exports.virtual || (exports.virtual = {}))[key] = out;
+      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
+      if (type & $export.R && expProto && !expProto[key]) hide(expProto, key, out);
+    }
+  }
+};
+// type bitmap
+$export.F = 1;   // forced
+$export.G = 2;   // global
+$export.S = 4;   // static
+$export.P = 8;   // proto
+$export.B = 16;  // bind
+$export.W = 32;  // wrap
+$export.U = 64;  // safe
+$export.R = 128; // real proto method for `library`
+module.exports = $export;
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// Thank's IE8 for his funny defineProperty
+module.exports = !__webpack_require__(38)((function () {
+  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+}));
+
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports) {
+
+module.exports = function () { /* empty */ };
+
+
+/***/ }),
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3692,7 +3894,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 var bidmanager = __webpack_require__(2);
 var utils = __webpack_require__(0);
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 
 var targeting = exports;
 var pbTargetingKeys = [];
@@ -3796,9 +3998,7 @@ targeting.setTargetingForAst = function () {
       // setKeywords supports string and array as value
       if (utils.isStr(targeting[targetId][key]) || utils.isArray(targeting[targetId][key])) {
         var keywordsObj = {};
-        var input = 'hb_adid';
-        var nKey = key.substring(0, input.length) === input ? key.toUpperCase() : key;
-        keywordsObj[nKey] = targeting[targetId][key];
+        keywordsObj[key.toUpperCase()] = targeting[targetId][key];
         window.apntag.setKeywords(targetId, keywordsObj);
       }
     }));
@@ -3897,12 +4097,12 @@ function getEmptyBid(adUnitCode) {
 }
 
 /***/ }),
-/* 22 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var dP = __webpack_require__(292);
-var createDesc = __webpack_require__(297);
-module.exports = __webpack_require__(23) ? function (object, key, value) {
+var dP = __webpack_require__(399);
+var createDesc = __webpack_require__(404);
+module.exports = __webpack_require__(24) ? function (object, key, value) {
   return dP.f(object, key, createDesc(1, value));
 } : function (object, key, value) {
   object[key] = value;
@@ -3911,17 +4111,7 @@ module.exports = __webpack_require__(23) ? function (object, key, value) {
 
 
 /***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// Thank's IE8 for his funny defineProperty
-module.exports = !__webpack_require__(24)((function () {
-  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
-}));
-
-
-/***/ }),
-/* 24 */
+/* 30 */
 /***/ (function(module, exports) {
 
 module.exports = function (exec) {
@@ -3934,7 +4124,7 @@ module.exports = function (exec) {
 
 
 /***/ }),
-/* 25 */
+/* 31 */
 /***/ (function(module, exports) {
 
 var id = 0;
@@ -3945,11 +4135,29 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 26 */
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var core = __webpack_require__(14);
+var global = __webpack_require__(17);
+var SHARED = '__core-js_shared__';
+var store = global[SHARED] || (global[SHARED] = {});
+
+(module.exports = function (key, value) {
+  return store[key] || (store[key] = value !== undefined ? value : {});
+})('versions', []).push({
+  version: core.version,
+  mode: __webpack_require__(407) ? 'pure' : 'global',
+  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
+});
+
+
+/***/ }),
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
-var cof = __webpack_require__(35);
+var cof = __webpack_require__(50);
 // eslint-disable-next-line no-prototype-builtins
 module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
   return cof(it) == 'String' ? it.split('') : Object(it);
@@ -3957,20 +4165,20 @@ module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
 
 
 /***/ }),
-/* 27 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 22.1.3.31 Array.prototype[@@unscopables]
-var UNSCOPABLES = __webpack_require__(40)('unscopables');
+var UNSCOPABLES = __webpack_require__(55)('unscopables');
 var ArrayProto = Array.prototype;
-if (ArrayProto[UNSCOPABLES] == undefined) __webpack_require__(22)(ArrayProto, UNSCOPABLES, {});
+if (ArrayProto[UNSCOPABLES] == undefined) __webpack_require__(29)(ArrayProto, UNSCOPABLES, {});
 module.exports = function (key) {
   ArrayProto[UNSCOPABLES][key] = true;
 };
 
 
 /***/ }),
-/* 28 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4108,7 +4316,7 @@ exports.getPriceBucketString = getPriceBucketString;
 exports.isValidPriceConfig = isValidPriceConfig;
 
 /***/ }),
-/* 29 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4117,7 +4325,7 @@ exports.isValidPriceConfig = isValidPriceConfig;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.hasNonVideoBidder = exports.videoAdUnit = undefined;
+exports.hasNonVideoBidder = exports.videoBidder = exports.videoAdUnit = undefined;
 exports.isValidVideoBid = isValidVideoBid;
 
 var _adaptermanager = __webpack_require__(1);
@@ -4133,13 +4341,17 @@ var OUTSTREAM = 'outstream';
  * Helper functions for working with video-enabled adUnits
  */
 var videoAdUnit = exports.videoAdUnit = function videoAdUnit(adUnit) {
-  return adUnit.mediaType === VIDEO_MEDIA_TYPE;
+  var mediaType = adUnit.mediaType === VIDEO_MEDIA_TYPE;
+  var mediaTypes = (0, _utils.deepAccess)(adUnit, 'mediaTypes.video');
+  return mediaType || mediaTypes;
 };
-var nonVideoBidder = function nonVideoBidder(bid) {
-  return !_adaptermanager.videoAdapters.includes(bid.bidder);
+var videoBidder = exports.videoBidder = function videoBidder(bid) {
+  return _adaptermanager.videoAdapters.includes(bid.bidder);
 };
 var hasNonVideoBidder = exports.hasNonVideoBidder = function hasNonVideoBidder(adUnit) {
-  return adUnit.bids.filter(nonVideoBidder).length;
+  return adUnit.bids.filter((function (bid) {
+    return !videoBidder(bid);
+  })).length;
 };
 
 /**
@@ -4179,7 +4391,105 @@ function isValidVideoBid(bid) {
 }
 
 /***/ }),
-/* 30 */
+/* 37 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// optional / simple context binding
+var aFunction = __webpack_require__(101);
+module.exports = function (fn, that, length) {
+  aFunction(fn);
+  if (that === undefined) return fn;
+  switch (length) {
+    case 1: return function (a) {
+      return fn.call(that, a);
+    };
+    case 2: return function (a, b) {
+      return fn.call(that, a, b);
+    };
+    case 3: return function (a, b, c) {
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function (/* ...args */) {
+    return fn.apply(that, arguments);
+  };
+};
+
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports) {
+
+module.exports = function (exec) {
+  try {
+    return !!exec();
+  } catch (e) {
+    return true;
+  }
+};
+
+
+/***/ }),
+/* 39 */,
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+var cof = __webpack_require__(41);
+// eslint-disable-next-line no-prototype-builtins
+module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
+  return cof(it) == 'String' ? it.split('') : Object(it);
+};
+
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports) {
+
+var toString = {}.toString;
+
+module.exports = function (it) {
+  return toString.call(it).slice(8, -1);
+};
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports) {
+
+// 7.2.1 RequireObjectCoercible(argument)
+module.exports = function (it) {
+  if (it == undefined) throw TypeError("Can't call method on  " + it);
+  return it;
+};
+
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.15 ToLength
+var toInteger = __webpack_require__(44);
+var min = Math.min;
+module.exports = function (it) {
+  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
+};
+
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports) {
+
+// 7.1.4 ToInteger
+var ceil = Math.ceil;
+var floor = Math.floor;
+module.exports = function (it) {
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+
+
+/***/ }),
+/* 45 */
 /***/ (function(module, exports) {
 
 var g;
@@ -4206,7 +4516,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 31 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4227,7 +4537,7 @@ function getGlobal() {
 }
 
 /***/ }),
-/* 32 */
+/* 47 */
 /***/ (function(module, exports) {
 
 var hasOwnProperty = {}.hasOwnProperty;
@@ -4237,11 +4547,11 @@ module.exports = function (it, key) {
 
 
 /***/ }),
-/* 33 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // optional / simple context binding
-var aFunction = __webpack_require__(299);
+var aFunction = __webpack_require__(408);
 module.exports = function (fn, that, length) {
   aFunction(fn);
   if (that === undefined) return fn;
@@ -4263,7 +4573,7 @@ module.exports = function (fn, that, length) {
 
 
 /***/ }),
-/* 34 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 0 -> Array#forEach
@@ -4273,11 +4583,11 @@ module.exports = function (fn, that, length) {
 // 4 -> Array#every
 // 5 -> Array#find
 // 6 -> Array#findIndex
-var ctx = __webpack_require__(33);
-var IObject = __webpack_require__(26);
-var toObject = __webpack_require__(36);
-var toLength = __webpack_require__(38);
-var asc = __webpack_require__(300);
+var ctx = __webpack_require__(48);
+var IObject = __webpack_require__(33);
+var toObject = __webpack_require__(51);
+var toLength = __webpack_require__(53);
+var asc = __webpack_require__(409);
 module.exports = function (TYPE, $create) {
   var IS_MAP = TYPE == 1;
   var IS_FILTER = TYPE == 2;
@@ -4313,7 +4623,7 @@ module.exports = function (TYPE, $create) {
 
 
 /***/ }),
-/* 35 */
+/* 50 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -4324,18 +4634,18 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 36 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.13 ToObject(argument)
-var defined = __webpack_require__(37);
+var defined = __webpack_require__(52);
 module.exports = function (it) {
   return Object(defined(it));
 };
 
 
 /***/ }),
-/* 37 */
+/* 52 */
 /***/ (function(module, exports) {
 
 // 7.2.1 RequireObjectCoercible(argument)
@@ -4346,11 +4656,11 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 38 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.15 ToLength
-var toInteger = __webpack_require__(39);
+var toInteger = __webpack_require__(54);
 var min = Math.min;
 module.exports = function (it) {
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
@@ -4358,7 +4668,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 39 */
+/* 54 */
 /***/ (function(module, exports) {
 
 // 7.1.4 ToInteger
@@ -4370,12 +4680,12 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 40 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var store = __webpack_require__(41)('wks');
-var uid = __webpack_require__(25);
-var Symbol = __webpack_require__(16).Symbol;
+var store = __webpack_require__(32)('wks');
+var uid = __webpack_require__(31);
+var Symbol = __webpack_require__(17).Symbol;
 var USE_SYMBOL = typeof Symbol == 'function';
 
 var $exports = module.exports = function (name) {
@@ -4387,26 +4697,14 @@ $exports.store = store;
 
 
 /***/ }),
-/* 41 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var global = __webpack_require__(16);
-var SHARED = '__core-js_shared__';
-var store = global[SHARED] || (global[SHARED] = {});
-module.exports = function (key) {
-  return store[key] || (store[key] = {});
-};
-
-
-/***/ }),
-/* 42 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // false -> Array#indexOf
 // true  -> Array#includes
-var toIObject = __webpack_require__(43);
-var toLength = __webpack_require__(38);
-var toAbsoluteIndex = __webpack_require__(307);
+var toIObject = __webpack_require__(57);
+var toLength = __webpack_require__(53);
+var toAbsoluteIndex = __webpack_require__(416);
 module.exports = function (IS_INCLUDES) {
   return function ($this, el, fromIndex) {
     var O = toIObject($this);
@@ -4428,21 +4726,55 @@ module.exports = function (IS_INCLUDES) {
 
 
 /***/ }),
-/* 43 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // to indexed object, toObject with fallback for non-array-like ES3 strings
-var IObject = __webpack_require__(26);
-var defined = __webpack_require__(37);
+var IObject = __webpack_require__(33);
+var defined = __webpack_require__(52);
 module.exports = function (it) {
   return IObject(defined(it));
 };
 
 
 /***/ }),
-/* 44 */,
-/* 45 */,
-/* 46 */
+/* 58 */,
+/* 59 */,
+/* 60 */
+/***/ (function(module, exports) {
+
+module.exports = clone;
+
+/*
+  Identical to `just-extend(true, {}, obj1)`
+
+  var arr = [1, 2, 3];
+  var subObj = {aa: 1};
+  var obj = {a: 3, b: 5, c: arr, d: subObj};
+  var objClone = clone(obj);
+  arr.push(4);
+  subObj.bb = 2;
+  obj; // {a: 3, b: 5, c: [1, 2, 3, 4], d: {aa: 1}}  
+  objClone; // {a: 3, b: 5, c: [1, 2, 3], d: {aa: 1, bb: 2}}
+*/
+
+function clone(obj) {
+  var result = Array.isArray(obj) ? [] : {};
+  for (var key in obj) {
+    // include prototype properties
+    var value = obj[key];
+    if (value && typeof value == 'object') {
+      result[key] = clone(value);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+
+/***/ }),
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4523,7 +4855,7 @@ exports.getScreenWidth = getScreenWidth;
 exports.setWindow = setWindow;
 
 /***/ }),
-/* 47 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4535,7 +4867,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.store = store;
 exports.getCacheUrl = getCacheUrl;
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
 var BASE_URL = 'https://prebid.adnxs.com/pbc/v1/cache';
 
@@ -4658,7 +4990,7 @@ function getCacheUrl(id) {
 }
 
 /***/ }),
-/* 48 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4779,21 +5111,6 @@ function createHook(type, fn, hookName) {
 }
 
 /***/ }),
-/* 49 */,
-/* 50 */,
-/* 51 */,
-/* 52 */,
-/* 53 */,
-/* 54 */,
-/* 55 */,
-/* 56 */,
-/* 57 */,
-/* 58 */,
-/* 59 */,
-/* 60 */,
-/* 61 */,
-/* 62 */,
-/* 63 */,
 /* 64 */,
 /* 65 */,
 /* 66 */,
@@ -4831,15 +5148,127 @@ function createHook(type, fn, hookName) {
 /* 98 */,
 /* 99 */,
 /* 100 */,
-/* 101 */,
-/* 102 */,
-/* 103 */,
-/* 104 */,
-/* 105 */,
-/* 106 */,
-/* 107 */,
-/* 108 */,
-/* 109 */,
+/* 101 */
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
+  return it;
+};
+
+
+/***/ }),
+/* 102 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var dP = __webpack_require__(103);
+var createDesc = __webpack_require__(108);
+module.exports = __webpack_require__(26) ? function (object, key, value) {
+  return dP.f(object, key, createDesc(1, value));
+} : function (object, key, value) {
+  object[key] = value;
+  return object;
+};
+
+
+/***/ }),
+/* 103 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var anObject = __webpack_require__(104);
+var IE8_DOM_DEFINE = __webpack_require__(105);
+var toPrimitive = __webpack_require__(107);
+var dP = Object.defineProperty;
+
+exports.f = __webpack_require__(26) ? Object.defineProperty : function defineProperty(O, P, Attributes) {
+  anObject(O);
+  P = toPrimitive(P, true);
+  anObject(Attributes);
+  if (IE8_DOM_DEFINE) try {
+    return dP(O, P, Attributes);
+  } catch (e) { /* empty */ }
+  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported!');
+  if ('value' in Attributes) O[P] = Attributes.value;
+  return O;
+};
+
+
+/***/ }),
+/* 104 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(21);
+module.exports = function (it) {
+  if (!isObject(it)) throw TypeError(it + ' is not an object!');
+  return it;
+};
+
+
+/***/ }),
+/* 105 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = !__webpack_require__(26) && !__webpack_require__(38)((function () {
+  return Object.defineProperty(__webpack_require__(106)('div'), 'a', { get: function () { return 7; } }).a != 7;
+}));
+
+
+/***/ }),
+/* 106 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(21);
+var document = __webpack_require__(20).document;
+// typeof document.createElement is 'object' in old IE
+var is = isObject(document) && isObject(document.createElement);
+module.exports = function (it) {
+  return is ? document.createElement(it) : {};
+};
+
+
+/***/ }),
+/* 107 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.1 ToPrimitive(input [, PreferredType])
+var isObject = __webpack_require__(21);
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+module.exports = function (it, S) {
+  if (!isObject(it)) return it;
+  var fn, val;
+  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+
+/***/ }),
+/* 108 */
+/***/ (function(module, exports) {
+
+module.exports = function (bitmap, value) {
+  return {
+    enumerable: !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable: !(bitmap & 4),
+    value: value
+  };
+};
+
+
+/***/ }),
+/* 109 */
+/***/ (function(module, exports) {
+
+var hasOwnProperty = {}.hasOwnProperty;
+module.exports = function (it, key) {
+  return hasOwnProperty.call(it, key);
+};
+
+
+/***/ }),
 /* 110 */,
 /* 111 */,
 /* 112 */,
@@ -5017,14 +5446,121 @@ function createHook(type, fn, hookName) {
 /* 284 */,
 /* 285 */,
 /* 286 */,
-/* 287 */
+/* 287 */,
+/* 288 */,
+/* 289 */,
+/* 290 */,
+/* 291 */,
+/* 292 */,
+/* 293 */,
+/* 294 */,
+/* 295 */,
+/* 296 */,
+/* 297 */,
+/* 298 */,
+/* 299 */,
+/* 300 */,
+/* 301 */,
+/* 302 */,
+/* 303 */,
+/* 304 */,
+/* 305 */,
+/* 306 */,
+/* 307 */,
+/* 308 */,
+/* 309 */,
+/* 310 */,
+/* 311 */,
+/* 312 */,
+/* 313 */,
+/* 314 */,
+/* 315 */,
+/* 316 */,
+/* 317 */,
+/* 318 */,
+/* 319 */,
+/* 320 */,
+/* 321 */,
+/* 322 */,
+/* 323 */,
+/* 324 */,
+/* 325 */,
+/* 326 */,
+/* 327 */,
+/* 328 */,
+/* 329 */,
+/* 330 */,
+/* 331 */,
+/* 332 */,
+/* 333 */,
+/* 334 */,
+/* 335 */,
+/* 336 */,
+/* 337 */,
+/* 338 */,
+/* 339 */,
+/* 340 */,
+/* 341 */,
+/* 342 */,
+/* 343 */,
+/* 344 */,
+/* 345 */,
+/* 346 */,
+/* 347 */,
+/* 348 */,
+/* 349 */,
+/* 350 */,
+/* 351 */,
+/* 352 */,
+/* 353 */,
+/* 354 */,
+/* 355 */,
+/* 356 */,
+/* 357 */,
+/* 358 */,
+/* 359 */,
+/* 360 */,
+/* 361 */,
+/* 362 */,
+/* 363 */,
+/* 364 */,
+/* 365 */,
+/* 366 */,
+/* 367 */,
+/* 368 */,
+/* 369 */,
+/* 370 */,
+/* 371 */,
+/* 372 */,
+/* 373 */,
+/* 374 */,
+/* 375 */,
+/* 376 */,
+/* 377 */,
+/* 378 */,
+/* 379 */,
+/* 380 */,
+/* 381 */,
+/* 382 */,
+/* 383 */,
+/* 384 */,
+/* 385 */,
+/* 386 */,
+/* 387 */,
+/* 388 */,
+/* 389 */,
+/* 390 */,
+/* 391 */,
+/* 392 */,
+/* 393 */,
+/* 394 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(288);
+module.exports = __webpack_require__(395);
 
 
 /***/ }),
-/* 288 */
+/* 395 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5034,25 +5570,25 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _prebidGlobal = __webpack_require__(31);
+var _prebidGlobal = __webpack_require__(46);
 
 var _utils = __webpack_require__(0);
 
-var _video = __webpack_require__(29);
+var _video = __webpack_require__(36);
 
 var _native = __webpack_require__(15);
 
-__webpack_require__(289);
+__webpack_require__(396);
 
-var _url = __webpack_require__(12);
+var _url = __webpack_require__(13);
 
-var _secureCreatives = __webpack_require__(317);
+var _secureCreatives = __webpack_require__(426);
 
 var _userSync = __webpack_require__(19);
 
 var _adloader = __webpack_require__(5);
 
-var _ajax = __webpack_require__(6);
+var _ajax = __webpack_require__(7);
 
 var _config = __webpack_require__(8);
 
@@ -5060,14 +5596,14 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 var pbjs = (0, _prebidGlobal.getGlobal)();
 
-var CONSTANTS = __webpack_require__(4);
+var CONSTANTS = __webpack_require__(3);
 var utils = __webpack_require__(0);
 var bidmanager = __webpack_require__(2);
 var adaptermanager = __webpack_require__(1);
-var bidfactory = __webpack_require__(3);
+var bidfactory = __webpack_require__(4);
 var events = __webpack_require__(11);
-var adserver = __webpack_require__(318);
-var targeting = __webpack_require__(21);
+var adserver = __webpack_require__(427);
+var targeting = __webpack_require__(28);
 var syncUsers = _userSync.userSync.syncUsers,
     triggerUserSyncs = _userSync.userSync.triggerUserSyncs;
 
@@ -5114,8 +5650,8 @@ pbjs.publisherDomain = pbjs.publisherDomain;
 pbjs.libLoaded = true;
 
 // version auto generated from build
-pbjs.version = 'v0.32.0';
-utils.logInfo('Prebid.js v0.32.0 loaded');
+pbjs.version = 'v0.34.9';
+utils.logInfo('Prebid.js v0.34.9 loaded');
 
 // create adUnit array
 pbjs.adUnits = pbjs.adUnits || [];
@@ -5333,7 +5869,7 @@ pbjs.renderAd = function (doc, id) {
       if (bid) {
         // replace macros according to openRTB with price paid = bid.cpm
         bid.ad = utils.replaceAuctionPrice(bid.ad, bid.cpm);
-        bid.url = utils.replaceAuctionPrice(bid.url, bid.cpm);
+        bid.adUrl = utils.replaceAuctionPrice(bid.adUrl, bid.cpm);
         // save winning bids
         pbjs._winningBids.push(bid);
 
@@ -5344,7 +5880,7 @@ pbjs.renderAd = function (doc, id) {
             width = bid.width,
             ad = bid.ad,
             mediaType = bid.mediaType,
-            url = bid.adUrl,
+            adUrl = bid.adUrl,
             renderer = bid.renderer;
 
 
@@ -5356,13 +5892,13 @@ pbjs.renderAd = function (doc, id) {
           doc.write(ad);
           doc.close();
           setRenderSize(doc, width, height);
-        } else if (url) {
+        } else if (adUrl) {
           var iframe = utils.createInvisibleIframe();
           iframe.height = height;
           iframe.width = width;
           iframe.style.display = 'inline';
           iframe.style.overflow = 'hidden';
-          iframe.src = url;
+          iframe.src = adUrl;
 
           utils.insertElement(iframe, doc, 'body');
           setRenderSize(doc, width, height);
@@ -5447,15 +5983,16 @@ pbjs.requestBids = function () {
     }));
   }
 
-  // for video-enabled adUnits, only request bids if all bidders support video
-  var invalidVideoAdUnits = adUnits.filter(_video.videoAdUnit).filter(_video.hasNonVideoBidder);
-  invalidVideoAdUnits.forEach((function (adUnit) {
-    utils.logError('adUnit ' + adUnit.code + ' has \'mediaType\' set to \'video\' but contains a bidder that doesn\'t support video. No Prebid demand requests will be triggered for this adUnit.');
-    for (var i = 0; i < adUnits.length; i++) {
-      if (adUnits[i].code === adUnit.code) {
-        adUnits.splice(i, 1);
-      }
-    }
+  // for video-enabled adUnits, only request bids for bidders that support video
+  adUnits.filter(_video.videoAdUnit).filter(_video.hasNonVideoBidder).forEach((function (adUnit) {
+    var nonVideoBidders = adUnit.bids.filter((function (bid) {
+      return !(0, _video.videoBidder)(bid);
+    })).map((function (bid) {
+      return bid.bidder;
+    }));
+
+    utils.logWarn(utils.unsupportedBidderMessage(adUnit, nonVideoBidders));
+    adUnit.bids = adUnit.bids.filter(_video.videoBidder);
   }));
 
   // for native-enabled adUnits, only request bids for bidders that support native
@@ -5464,9 +6001,9 @@ pbjs.requestBids = function () {
       return !(0, _native.nativeBidder)(bid);
     })).map((function (bid) {
       return bid.bidder;
-    })).join(', ');
+    }));
 
-    utils.logError('adUnit ' + adUnit.code + ' has \'mediaType\' set to \'native\' but contains non-native bidder(s) ' + nonNativeBidders + '. No Prebid demand requests will be triggered for those bidders.');
+    utils.logWarn(utils.unsupportedBidderMessage(adUnit, nonNativeBidders));
     adUnit.bids = adUnit.bids.filter(_native.nativeBidder);
   }));
 
@@ -5991,7 +6528,7 @@ pbjs.cmd.push = function (command) {
     try {
       command.call();
     } catch (e) {
-      utils.logError('Error processing command :' + e.message);
+      utils.logError('Error processing command :', e.message, e.stack);
     }
   } else {
     utils.logError('Commands written into pbjs.cmd.push must be wrapped in a function');
@@ -6022,7 +6559,7 @@ pbjs.processQueue = function () {
 };
 
 /***/ }),
-/* 289 */
+/* 396 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6031,10 +6568,10 @@ pbjs.processQueue = function () {
 /** @module polyfill
 Misc polyfills
 */
-__webpack_require__(290);
-__webpack_require__(303);
-__webpack_require__(305);
-__webpack_require__(308);
+__webpack_require__(397);
+__webpack_require__(412);
+__webpack_require__(414);
+__webpack_require__(417);
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
 Number.isInteger = Number.isInteger || function (value) {
@@ -6042,22 +6579,22 @@ Number.isInteger = Number.isInteger || function (value) {
 };
 
 /***/ }),
-/* 290 */
+/* 397 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(291);
+__webpack_require__(398);
 module.exports = __webpack_require__(14).Array.find;
 
 
 /***/ }),
-/* 291 */
+/* 398 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 // 22.1.3.8 Array.prototype.find(predicate, thisArg = undefined)
-var $export = __webpack_require__(17);
-var $find = __webpack_require__(34)(5);
+var $export = __webpack_require__(22);
+var $find = __webpack_require__(49)(5);
 var KEY = 'find';
 var forced = true;
 // Shouldn't skip holes
@@ -6067,19 +6604,19 @@ $export($export.P + $export.F * forced, 'Array', {
     return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
   }
 });
-__webpack_require__(27)(KEY);
+__webpack_require__(34)(KEY);
 
 
 /***/ }),
-/* 292 */
+/* 399 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var anObject = __webpack_require__(293);
-var IE8_DOM_DEFINE = __webpack_require__(294);
-var toPrimitive = __webpack_require__(296);
+var anObject = __webpack_require__(400);
+var IE8_DOM_DEFINE = __webpack_require__(401);
+var toPrimitive = __webpack_require__(403);
 var dP = Object.defineProperty;
 
-exports.f = __webpack_require__(23) ? Object.defineProperty : function defineProperty(O, P, Attributes) {
+exports.f = __webpack_require__(24) ? Object.defineProperty : function defineProperty(O, P, Attributes) {
   anObject(O);
   P = toPrimitive(P, true);
   anObject(Attributes);
@@ -6093,10 +6630,10 @@ exports.f = __webpack_require__(23) ? Object.defineProperty : function definePro
 
 
 /***/ }),
-/* 293 */
+/* 400 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(18);
+var isObject = __webpack_require__(23);
 module.exports = function (it) {
   if (!isObject(it)) throw TypeError(it + ' is not an object!');
   return it;
@@ -6104,20 +6641,20 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 294 */
+/* 401 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = !__webpack_require__(23) && !__webpack_require__(24)((function () {
-  return Object.defineProperty(__webpack_require__(295)('div'), 'a', { get: function () { return 7; } }).a != 7;
+module.exports = !__webpack_require__(24) && !__webpack_require__(30)((function () {
+  return Object.defineProperty(__webpack_require__(402)('div'), 'a', { get: function () { return 7; } }).a != 7;
 }));
 
 
 /***/ }),
-/* 295 */
+/* 402 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(18);
-var document = __webpack_require__(16).document;
+var isObject = __webpack_require__(23);
+var document = __webpack_require__(17).document;
 // typeof document.createElement is 'object' in old IE
 var is = isObject(document) && isObject(document.createElement);
 module.exports = function (it) {
@@ -6126,11 +6663,11 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 296 */
+/* 403 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = __webpack_require__(18);
+var isObject = __webpack_require__(23);
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
 // and the second argument - flag - preferred type is a string
 module.exports = function (it, S) {
@@ -6144,7 +6681,7 @@ module.exports = function (it, S) {
 
 
 /***/ }),
-/* 297 */
+/* 404 */
 /***/ (function(module, exports) {
 
 module.exports = function (bitmap, value) {
@@ -6158,15 +6695,15 @@ module.exports = function (bitmap, value) {
 
 
 /***/ }),
-/* 298 */
+/* 405 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var global = __webpack_require__(16);
-var hide = __webpack_require__(22);
-var has = __webpack_require__(32);
-var SRC = __webpack_require__(25)('src');
+var global = __webpack_require__(17);
+var hide = __webpack_require__(29);
+var has = __webpack_require__(47);
+var SRC = __webpack_require__(31)('src');
+var $toString = __webpack_require__(406);
 var TO_STRING = 'toString';
-var $toString = Function[TO_STRING];
 var TPL = ('' + $toString).split(TO_STRING);
 
 __webpack_require__(14).inspectSource = function (it) {
@@ -6195,7 +6732,21 @@ __webpack_require__(14).inspectSource = function (it) {
 
 
 /***/ }),
-/* 299 */
+/* 406 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(32)('native-function-to-string', Function.toString);
+
+
+/***/ }),
+/* 407 */
+/***/ (function(module, exports) {
+
+module.exports = false;
+
+
+/***/ }),
+/* 408 */
 /***/ (function(module, exports) {
 
 module.exports = function (it) {
@@ -6205,11 +6756,11 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 300 */
+/* 409 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 9.4.2.3 ArraySpeciesCreate(originalArray, length)
-var speciesConstructor = __webpack_require__(301);
+var speciesConstructor = __webpack_require__(410);
 
 module.exports = function (original, length) {
   return new (speciesConstructor(original))(length);
@@ -6217,12 +6768,12 @@ module.exports = function (original, length) {
 
 
 /***/ }),
-/* 301 */
+/* 410 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(18);
-var isArray = __webpack_require__(302);
-var SPECIES = __webpack_require__(40)('species');
+var isObject = __webpack_require__(23);
+var isArray = __webpack_require__(411);
+var SPECIES = __webpack_require__(55)('species');
 
 module.exports = function (original) {
   var C;
@@ -6239,33 +6790,33 @@ module.exports = function (original) {
 
 
 /***/ }),
-/* 302 */
+/* 411 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.2.2 IsArray(argument)
-var cof = __webpack_require__(35);
+var cof = __webpack_require__(50);
 module.exports = Array.isArray || function isArray(arg) {
   return cof(arg) == 'Array';
 };
 
 
 /***/ }),
-/* 303 */
+/* 412 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(304);
+__webpack_require__(413);
 module.exports = __webpack_require__(14).Array.findIndex;
 
 
 /***/ }),
-/* 304 */
+/* 413 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 // 22.1.3.9 Array.prototype.findIndex(predicate, thisArg = undefined)
-var $export = __webpack_require__(17);
-var $find = __webpack_require__(34)(6);
+var $export = __webpack_require__(22);
+var $find = __webpack_require__(49)(6);
 var KEY = 'findIndex';
 var forced = true;
 // Shouldn't skip holes
@@ -6275,26 +6826,26 @@ $export($export.P + $export.F * forced, 'Array', {
     return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
   }
 });
-__webpack_require__(27)(KEY);
+__webpack_require__(34)(KEY);
 
 
 /***/ }),
-/* 305 */
+/* 414 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(306);
+__webpack_require__(415);
 module.exports = __webpack_require__(14).Array.includes;
 
 
 /***/ }),
-/* 306 */
+/* 415 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 // https://github.com/tc39/Array.prototype.includes
-var $export = __webpack_require__(17);
-var $includes = __webpack_require__(42)(true);
+var $export = __webpack_require__(22);
+var $includes = __webpack_require__(56)(true);
 
 $export($export.P, 'Array', {
   includes: function includes(el /* , fromIndex = 0 */) {
@@ -6302,14 +6853,14 @@ $export($export.P, 'Array', {
   }
 });
 
-__webpack_require__(27)('includes');
+__webpack_require__(34)('includes');
 
 
 /***/ }),
-/* 307 */
+/* 416 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(39);
+var toInteger = __webpack_require__(54);
 var max = Math.max;
 var min = Math.min;
 module.exports = function (index, length) {
@@ -6319,39 +6870,40 @@ module.exports = function (index, length) {
 
 
 /***/ }),
-/* 308 */
+/* 417 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(309);
+__webpack_require__(418);
 module.exports = __webpack_require__(14).Object.assign;
 
 
 /***/ }),
-/* 309 */
+/* 418 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.3.1 Object.assign(target, source)
-var $export = __webpack_require__(17);
+var $export = __webpack_require__(22);
 
-$export($export.S + $export.F, 'Object', { assign: __webpack_require__(310) });
+$export($export.S + $export.F, 'Object', { assign: __webpack_require__(419) });
 
 
 /***/ }),
-/* 310 */
+/* 419 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 // 19.1.2.1 Object.assign(target, source, ...)
-var getKeys = __webpack_require__(311);
-var gOPS = __webpack_require__(315);
-var pIE = __webpack_require__(316);
-var toObject = __webpack_require__(36);
-var IObject = __webpack_require__(26);
+var DESCRIPTORS = __webpack_require__(24);
+var getKeys = __webpack_require__(420);
+var gOPS = __webpack_require__(424);
+var pIE = __webpack_require__(425);
+var toObject = __webpack_require__(51);
+var IObject = __webpack_require__(33);
 var $assign = Object.assign;
 
 // should work with symbols and should have deterministic property order (V8 bug)
-module.exports = !$assign || __webpack_require__(24)((function () {
+module.exports = !$assign || __webpack_require__(30)((function () {
   var A = {};
   var B = {};
   // eslint-disable-next-line no-undef
@@ -6372,18 +6924,21 @@ module.exports = !$assign || __webpack_require__(24)((function () {
     var length = keys.length;
     var j = 0;
     var key;
-    while (length > j) if (isEnum.call(S, key = keys[j++])) T[key] = S[key];
+    while (length > j) {
+      key = keys[j++];
+      if (!DESCRIPTORS || isEnum.call(S, key)) T[key] = S[key];
+    }
   } return T;
 } : $assign;
 
 
 /***/ }),
-/* 311 */
+/* 420 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
-var $keys = __webpack_require__(312);
-var enumBugKeys = __webpack_require__(314);
+var $keys = __webpack_require__(421);
+var enumBugKeys = __webpack_require__(423);
 
 module.exports = Object.keys || function keys(O) {
   return $keys(O, enumBugKeys);
@@ -6391,13 +6946,13 @@ module.exports = Object.keys || function keys(O) {
 
 
 /***/ }),
-/* 312 */
+/* 421 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var has = __webpack_require__(32);
-var toIObject = __webpack_require__(43);
-var arrayIndexOf = __webpack_require__(42)(false);
-var IE_PROTO = __webpack_require__(313)('IE_PROTO');
+var has = __webpack_require__(47);
+var toIObject = __webpack_require__(57);
+var arrayIndexOf = __webpack_require__(56)(false);
+var IE_PROTO = __webpack_require__(422)('IE_PROTO');
 
 module.exports = function (object, names) {
   var O = toIObject(object);
@@ -6414,18 +6969,18 @@ module.exports = function (object, names) {
 
 
 /***/ }),
-/* 313 */
+/* 422 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var shared = __webpack_require__(41)('keys');
-var uid = __webpack_require__(25);
+var shared = __webpack_require__(32)('keys');
+var uid = __webpack_require__(31);
 module.exports = function (key) {
   return shared[key] || (shared[key] = uid(key));
 };
 
 
 /***/ }),
-/* 314 */
+/* 423 */
 /***/ (function(module, exports) {
 
 // IE 8- don't enum bug keys
@@ -6435,21 +6990,21 @@ module.exports = (
 
 
 /***/ }),
-/* 315 */
+/* 424 */
 /***/ (function(module, exports) {
 
 exports.f = Object.getOwnPropertySymbols;
 
 
 /***/ }),
-/* 316 */
+/* 425 */
 /***/ (function(module, exports) {
 
 exports.f = {}.propertyIsEnumerable;
 
 
 /***/ }),
-/* 317 */
+/* 426 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6466,7 +7021,7 @@ var _events2 = _interopRequireDefault(_events);
 
 var _native = __webpack_require__(15);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -6550,15 +7105,15 @@ function resizeRemoteCreative(_ref) {
 }
 
 /***/ }),
-/* 318 */
+/* 427 */
 /***/ ((function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _url = __webpack_require__(12);
+var _url = __webpack_require__(13);
 
-var _targeting = __webpack_require__(21);
+var _targeting = __webpack_require__(28);
 
 // Adserver parent class
 var AdServer = function AdServer(attr) {
@@ -6590,7 +7145,7 @@ exports.dfpAdserver = function (options, urlComponents) {
   adserver.appendQueryParams = function () {
     var bid = adserver.getWinningBidByCode();
     if (bid) {
-      this.urlComponents.search.description_url = encodeURIComponent(bid.descriptionUrl);
+      this.urlComponents.search.description_url = encodeURIComponent(bid.vastUrl);
       this.urlComponents.search.cust_params = getCustomParams(bid.adserverTargeting);
       this.urlComponents.search.correlator = Date.now();
     }

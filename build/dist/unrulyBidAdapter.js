@@ -1,154 +1,136 @@
-pbjsChunk([35],{
+pbjsChunk([66],{
 
-/***/ 271:
+/***/ 377:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(272);
+module.exports = __webpack_require__(378);
 
 
 /***/ }),
 
-/***/ 272:
+/***/ 378:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.adapter = undefined;
+
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _ajax = __webpack_require__(6);
-
-var _bidfactory = __webpack_require__(3);
-
-var _bidfactory2 = _interopRequireDefault(_bidfactory);
-
-var _bidmanager = __webpack_require__(2);
-
-var _bidmanager2 = _interopRequireDefault(_bidmanager);
 
 var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _constants = __webpack_require__(4);
+var _Renderer = __webpack_require__(18);
 
-var _Renderer = __webpack_require__(20);
+var _bidderFactory = __webpack_require__(6);
 
-var _adaptermanager = __webpack_require__(1);
-
-var _adaptermanager2 = _interopRequireDefault(_adaptermanager);
+var _mediaTypes = __webpack_require__(12);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-function createRenderHandler(_ref) {
-  var bidResponseBid = _ref.bidResponseBid,
-      rendererConfig = _ref.rendererConfig;
-
-  function createApi() {
-    parent.window.unruly['native'].prebid = parent.window.unruly['native'].prebid || {};
-    parent.window.unruly['native'].prebid.uq = parent.window.unruly['native'].prebid.uq || [];
-
-    return {
-      render: function render(bidResponseBid) {
-        parent.window.unruly['native'].prebid.uq.push(['render', bidResponseBid]);
-      },
-      onLoaded: function onLoaded(bidResponseBid) {}
-    };
-  }
-
+function configureUniversalTag(exchangeRenderer) {
   parent.window.unruly = parent.window.unruly || {};
   parent.window.unruly['native'] = parent.window.unruly['native'] || {};
-  parent.window.unruly['native'].siteId = parent.window.unruly['native'].siteId || rendererConfig.siteId;
+  parent.window.unruly['native'].siteId = parent.window.unruly['native'].siteId || exchangeRenderer.siteId;
+  parent.window.unruly['native'].supplyMode = 'prebid';
+}
 
-  var api = createApi();
+function configureRendererQueue() {
+  parent.window.unruly['native'].prebid = parent.window.unruly['native'].prebid || {};
+  parent.window.unruly['native'].prebid.uq = parent.window.unruly['native'].prebid.uq || [];
+}
+
+function notifyRenderer(bidResponseBid) {
+  parent.window.unruly['native'].prebid.uq.push(['render', bidResponseBid]);
+}
+
+var serverResponseToBid = function serverResponseToBid(bid, rendererInstance) {
   return {
-    render: function render() {
-      api.render(bidResponseBid);
-    },
-    onRendererLoad: function onRendererLoad() {
-      api.onLoaded(bidResponseBid);
-    }
+    requestId: bid.bidId,
+    cpm: bid.cpm,
+    width: bid.width,
+    height: bid.height,
+    vastUrl: bid.vastUrl,
+    netRevenue: true,
+    creativeId: bid.bidId,
+    ttl: 360,
+    currency: 'USD',
+    renderer: rendererInstance
   };
-}
+};
 
-function createBidResponseHandler(bidRequestBids) {
-  return {
-    onBidResponse: function onBidResponse(responseBody) {
-      try {
-        var exchangeResponse = JSON.parse(responseBody);
-        exchangeResponse.bids.forEach((function (exchangeBid) {
-          var bidResponseBid = _bidfactory2['default'].createBid(exchangeBid.ext.statusCode, exchangeBid);
+var buildPrebidResponseAndInstallRenderer = function buildPrebidResponseAndInstallRenderer(bids) {
+  return bids.filter((function (serverBid) {
+    return !!utils.deepAccess(serverBid, 'ext.renderer');
+  })).map((function (serverBid) {
+    var exchangeRenderer = utils.deepAccess(serverBid, 'ext.renderer');
+    configureUniversalTag(exchangeRenderer);
+    configureRendererQueue();
 
-          _extends(bidResponseBid, exchangeBid);
+    var rendererInstance = _Renderer.Renderer.install(_extends({}, exchangeRenderer, { callback: function callback() {} }));
+    return { rendererInstance: rendererInstance, serverBid: serverBid };
+  })).map((function (_ref) {
+    var rendererInstance = _ref.rendererInstance,
+        serverBid = _ref.serverBid;
 
-          if (exchangeBid.ext.renderer) {
-            var rendererParams = exchangeBid.ext.renderer;
-            var renderHandler = createRenderHandler({
-              bidResponseBid: bidResponseBid,
-              rendererConfig: rendererParams.config
-            });
+    var prebidBid = serverResponseToBid(serverBid, rendererInstance);
 
-            bidResponseBid.renderer = _Renderer.Renderer.install(_extends({}, rendererParams, { callback: function callback() {
-                return renderHandler.onRendererLoad();
-              } }));
-            bidResponseBid.renderer.setRender((function () {
-              return renderHandler.render();
-            }));
-          }
+    var rendererConfig = _extends({}, prebidBid, {
+      renderer: rendererInstance,
+      adUnitCode: serverBid.ext.adUnitCode
+    });
 
-          _bidmanager2['default'].addBidResponse(exchangeBid.ext.placementCode, bidResponseBid);
-        }));
-      } catch (error) {
-        utils.logError(error);
-        bidRequestBids.forEach((function (bidRequestBid) {
-          var bidResponseBid = _bidfactory2['default'].createBid(_constants.STATUS.NO_BID);
-          _bidmanager2['default'].addBidResponse(bidRequestBid.placementCode, bidResponseBid);
-        }));
-      }
-    }
-  };
-}
+    rendererInstance.setRender((function () {
+      notifyRenderer(rendererConfig);
+    }));
 
-function UnrulyAdapter() {
-  var adapter = {
-    exchangeUrl: 'https://targeting.unrulymedia.com/prebid',
-    callBids: function callBids(_ref2) {
-      var bidRequestBids = _ref2.bids;
+    return prebidBid;
+  }));
+};
 
-      if (!bidRequestBids || bidRequestBids.length === 0) {
-        return;
-      }
+var adapter = exports.adapter = {
+  code: 'unruly',
+  supportedMediaTypes: [_mediaTypes.VIDEO],
+  isBidRequestValid: function isBidRequestValid(bid) {
+    if (!bid) return false;
 
-      var videoMediaType = utils.deepAccess(bidRequestBids[0], 'mediaTypes.video');
-      var context = utils.deepAccess(bidRequestBids[0], 'mediaTypes.video.context');
-      if (videoMediaType && context !== 'outstream') {
-        return;
-      }
+    var context = utils.deepAccess(bid, 'mediaTypes.video.context');
 
-      var payload = {
-        bidRequests: bidRequestBids
-      };
+    return bid.mediaType === 'video' || context === 'outstream';
+  },
 
-      var bidResponseHandler = createBidResponseHandler(bidRequestBids);
+  buildRequests: function buildRequests(validBidRequests) {
+    var url = 'https://targeting.unrulymedia.com/prebid';
+    var method = 'POST';
+    var data = { bidRequests: validBidRequests };
+    var options = { contentType: 'application/json' };
 
-      (0, _ajax.ajax)(adapter.exchangeUrl, bidResponseHandler.onBidResponse, JSON.stringify(payload), {
-        contentType: 'application/json',
-        withCredentials: true
-      });
-    }
-  };
+    return {
+      url: url,
+      method: method,
+      data: data,
+      options: options
+    };
+  },
 
-  return adapter;
-}
+  interpretResponse: function interpretResponse() {
+    var serverResponse = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-_adaptermanager2['default'].registerBidAdapter(new UnrulyAdapter(), 'unruly', {
-  supportedMediaTypes: ['video']
-});
+    var serverResponseBody = serverResponse.body;
+    var noBidsResponse = [];
+    var isInvalidResponse = !serverResponseBody || !serverResponseBody.bids;
 
-module.exports = UnrulyAdapter;
+    return isInvalidResponse ? noBidsResponse : buildPrebidResponseAndInstallRenderer(serverResponseBody.bids);
+  }
+};
+
+(0, _bidderFactory.registerBidder)(adapter);
 
 /***/ })
 
-},[271]);
+},[377]);

@@ -1,15 +1,15 @@
-pbjsChunk([13],{
+pbjsChunk([38],{
 
-/***/ 148:
+/***/ 209:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(149);
-module.exports = __webpack_require__(150);
+__webpack_require__(210);
+module.exports = __webpack_require__(211);
 
 
 /***/ }),
 
-/***/ 149:
+/***/ 210:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26,7 +26,7 @@ var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _bidderFactory = __webpack_require__(9);
+var _bidderFactory = __webpack_require__(6);
 
 var _userSync = __webpack_require__(19);
 
@@ -400,11 +400,11 @@ exports.ImproveDigitalAdServerJSClient = ImproveDigitalAdServerJSClient;
 
 /***/ }),
 
-/***/ 150:
+/***/ 211:
 /***/ (function(module, exports) {
 
 
 
 /***/ })
 
-},[148]);
+},[209]);

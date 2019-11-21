@@ -1,14 +1,14 @@
-pbjsChunk([78],{
+pbjsChunk([96],{
 
-/***/ 151:
+/***/ 212:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(152);
+module.exports = __webpack_require__(213);
 
 
 /***/ }),
 
-/***/ 152:
+/***/ 213:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20,11 +20,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 // jshint ignore:start
 
 
-var _adapter = __webpack_require__(7);
+var _adapter = __webpack_require__(9);
 
 var _adapter2 = _interopRequireDefault(_adapter);
 
-var _bidfactory = __webpack_require__(3);
+var _bidfactory = __webpack_require__(4);
 
 var _bidfactory2 = _interopRequireDefault(_bidfactory);
 
@@ -36,9 +36,9 @@ var _utils = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _constants = __webpack_require__(4);
+var _constants = __webpack_require__(3);
 
-var _url = __webpack_require__(12);
+var _url = __webpack_require__(13);
 
 var url = _interopRequireWildcard(_url);
 
@@ -465,7 +465,7 @@ var cygnus_index_start = function cygnus_index_start() {
     } else {
       scriptSrc = utils.getTopWindowLocation().protocol === 'http:' ? 'http://as.casalemedia.com' : 'https://as-sec.casalemedia.com';
     }
-    var prebidVersion = encodeURIComponent('0.32.0');
+    var prebidVersion = encodeURIComponent('0.34.9');
     scriptSrc += '/cygnus?v=7&fn=cygnus_index_parse_res&s=' + this.siteID + '&r=' + jsonURI + '&pid=pb' + prebidVersion;
     if (typeof this.timeoutDelay === 'number' && this.timeoutDelay % 1 === 0 && this.timeoutDelay >= 0) {
       scriptSrc += '&t=' + this.timeoutDelay;
@@ -688,7 +688,7 @@ var IndexExchangeAdapter = function IndexExchangeAdapter() {
       }
 
       var usingSizeSpecificSiteID = false;
-      // Check for size defined in bidder params 
+      // Check for size defined in bidder params
       if (bid.params.size && utils.isArray(bid.params.size)) {
         if (!(bid.sizes[j][0] == bid.params.size[0] && bid.sizes[j][1] == bid.params.size[1])) {
           passOnBid(bid.placementCode);
@@ -951,7 +951,6 @@ var IndexExchangeAdapter = function IndexExchangeAdapter() {
         bid.width = cygnusRequest.video.w;
         bid.height = cygnusRequest.video.h;
         bid.vastUrl = cygnusBid.ext.vasturl;
-        bid.descriptionUrl = cygnusBid.ext.vasturl;
         bid.mediaType = 'video';
 
         _bidmanager2['default'].addBidResponse(prebidRequest.placementCode, bid);
@@ -1173,4 +1172,4 @@ module.exports = IndexExchangeAdapter;
 
 /***/ })
 
-},[151]);
+},[212]);
